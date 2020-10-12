@@ -1,18 +1,19 @@
 ---
 title: Concepts
 main_menu: true
-content_template: templates/concept
+description: Concepts Kubernetes
+content_type: concept
 weight: 40
 ---
 
-{{% capture overview %}}
+<!-- overview -->
 
 La section Concepts vous aide à mieux comprendre les composants du système Kubernetes et les abstractions que Kubernetes utilise pour représenter votre cluster.
 Elle vous aide également à mieux comprendre le fonctionnement de Kubernetes en général.
 
-{{% /capture %}}
 
-{{% capture body %}}
+
+<!-- body -->
 
 ## Vue d'ensemble
 
@@ -80,12 +81,13 @@ Le master node Kubernetes contrôle chaque noeud; vous interagirez rarement dire
 
 * [Annotations](/docs/concepts/overview/working-with-objects/annotations/)
 
-{{% /capture %}}
 
-{{% capture whatsnext %}}
+
+## {{% heading "whatsnext" %}}
+
 
 Si vous souhaitez écrire une page de concept, consultez
 [Utilisation de modèles de page](/docs/home/contribute/page-templates/)
 pour plus d'informations sur le type de page pour la documentation d'un concept.
 
-{{% /capture %}}
+

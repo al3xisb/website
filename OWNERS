@@ -6,5 +6,11 @@ reviewers:
 approvers:
 - sig-docs-en-owners # Defined in OWNERS_ALIASES
 
+emeritus_approvers:
+# - chenopis, commented out to disable PR assignments
+# - jaredbhatti, commented out to disable PR assignments
+- stewart-yu 
+- zacharysarah
+
 labels:
 - sig/docs

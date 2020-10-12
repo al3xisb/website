@@ -1,27 +1,20 @@
 ---
-reviewers:
-- sieben
-- perriea
-- lledru
-- awkif
-- yastij
-- rbenzair
-- oussemos
 title: Classe d'exécution (Runtime Class)
-content_template: templates/concept
+description: Classe d'execution conteneur pour Kubernetes
+content_type: concept
 weight: 20
 ---
 
-{{% capture overview %}}
+<!-- overview -->
 
 {{< feature-state for_k8s_version="v1.12" state="alpha" >}}
 
 Cette page décrit la ressource RuntimeClass et le mécanisme de sélection d'exécution (runtime).
 
-{{% /capture %}}
 
 
-{{% capture body %}}
+
+<!-- body -->
 
 ## Runtime Class
 
@@ -92,7 +85,7 @@ spec:
 
 {{< note >}}
 Il est recommandé de limiter les opérations d'écriture sur la RuntimeClass (create/update/patch/delete) à
-l'administrateur du cluster. C'est la configuration par défault. Voir [Vue d'ensemble d'autorisation](https://kubernetes.io/docs/reference/access-authn-authz/authorization/) pour plus de détails.
+l'administrateur du cluster. C'est la configuration par défault. Voir [Vue d'ensemble d'autorisation](/docs/reference/access-authn-authz/authorization/) pour plus de détails.
 {{< /note >}}
 
 ### Usage
@@ -119,4 +112,4 @@ message d'erreur.
 Si aucun `runtimeClassName` n'est spécifié, le RuntimeHandler par défault sera utilisé, qui équivaut
 au comportement lorsque la fonctionnalité RuntimeClass est désactivée.
 
-{{% /capture %}}
+

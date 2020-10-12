@@ -1,26 +1,27 @@
 ---
 title: Pull an Image from a Private Registry
-content_template: templates/task
+content_type: task
 weight: 100
 ---
 
-{{% capture overview %}}
+<!-- overview -->
 
 This page shows how to create a Pod that uses a Secret to pull an image from a
 private Docker registry or repository.
 
-{{% /capture %}}
 
-{{% capture prerequisites %}}
+
+## {{% heading "prerequisites" %}}
+
 
 * {{< include "task-tutorial-prereqs.md" >}} {{< version-check >}}
 
 * To do this exercise, you need a
 [Docker ID](https://docs.docker.com/docker-id/) and password.
 
-{{% /capture %}}
 
-{{% capture steps %}}
+
+<!-- steps -->
 
 ## Log in to Docker
 
@@ -131,13 +132,13 @@ The output is similar to this:
 
 ```yaml
 apiVersion: v1
-data:
-  .dockerconfigjson: eyJodHRwczovL2luZGV4L ... J0QUl6RTIifX0=
 kind: Secret
 metadata:
   ...
   name: regcred
   ...
+data:
+  .dockerconfigjson: eyJodHRwczovL2luZGV4L ... J0QUl6RTIifX0=
 type: kubernetes.io/dockerconfigjson
 ```
 
@@ -153,7 +154,7 @@ kubectl get secret regcred --output="jsonpath={.data.\.dockerconfigjson}" | base
 The output is similar to this:
 
 ```json
-{"auths":{"yourprivateregistry.com":{"username":"janedoe","password":"xxxxxxxxxxx","email":"jdoe@example.com","auth":"c3R...zE2"}}}
+{"auths":{"your.private.registry.example.com":{"username":"janedoe","password":"xxxxxxxxxxx","email":"jdoe@example.com","auth":"c3R...zE2"}}}
 ```
 
 To understand what is in the `auth` field, convert the base64-encoded data to a readable format:
@@ -187,7 +188,7 @@ wget -O my-private-reg-pod.yaml https://k8s.io/examples/pods/private-reg-pod.yam
 In file `my-private-reg-pod.yaml`, replace `<your-private-image>` with the path to an image in a private registry such as:
 
 ```none
-janedoe/jdoe-private:v1
+your.private.registry.example.com/janedoe/jdoe-private:v1
 ```
 
 To pull the image from the private registry, Kubernetes needs credentials.
@@ -200,15 +201,17 @@ kubectl apply -f my-private-reg-pod.yaml
 kubectl get pod private-reg
 ```
 
-{{% /capture %}}
 
-{{% capture whatsnext %}}
+
+## {{% heading "whatsnext" %}}
+
 
 * Learn more about [Secrets](/docs/concepts/configuration/secret/).
 * Learn more about [using a private registry](/docs/concepts/containers/images/#using-a-private-registry).
+* Learn more about [adding image pull secrets to a service account](/docs/tasks/configure-pod-container/configure-service-account/#add-imagepullsecrets-to-a-service-account).
 * See [kubectl create secret docker-registry](/docs/reference/generated/kubectl/kubectl-commands/#-em-secret-docker-registry-em-).
 * See [Secret](/docs/reference/generated/kubernetes-api/{{< param "version" >}}/#secret-v1-core).
 * See the `imagePullSecrets` field of [PodSpec](/docs/reference/generated/kubernetes-api/{{< param "version" >}}/#podspec-v1-core).
 
-{{% /capture %}}
+
 

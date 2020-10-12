@@ -1,9 +1,12 @@
 ---
 title: kubeadm join phase
 weight: 90
+content_type: concept
 ---
-In v1.14.0, kubeadm introduces the `kubeadm join phase` command with the aim of making kubeadm more modular. This modularity enables you to invoke atomic sub-steps of the join process.
-Hence, you can let kubeadm do some parts and fill in yourself where you need customizations.
+
+`kubeadm join phase` enables you to invoke atomic steps of the join process.
+Hence, you can let kubeadm do some of the work and you can fill in the gaps
+if you wish to apply customization.
 
 `kubeadm join phase` is consistent with the [kubeadm join workflow](/docs/reference/setup-tools/kubeadm/kubeadm-join/#join-workflow),
 and behind the scene both use the same code.
@@ -55,7 +58,8 @@ Using this phase you can join a node as a control-plane instance.
 {{< tab name="mark-control-plane" include="generated/kubeadm_join_phase_control-plane-join_mark-control-plane.md" />}}
 {{< /tabs >}}
 
-## What's next
+## {{% heading "whatsnext" %}}
+
 * [kubeadm init](/docs/reference/setup-tools/kubeadm/kubeadm-init/) to bootstrap a Kubernetes control-plane node
 * [kubeadm join](/docs/reference/setup-tools/kubeadm/kubeadm-join/) to connect a node to the cluster
 * [kubeadm reset](/docs/reference/setup-tools/kubeadm/kubeadm-reset/) to revert any changes made to this host by `kubeadm init` or `kubeadm join`

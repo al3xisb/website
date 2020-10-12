@@ -1,15 +1,20 @@
 ---
 title: Versions supportées de la documentation Kubernetes
-content_template: templates/concept
+description: Documentation de Kubernetes
+content_type: concept
+card:
+  name: about
+  weight: 10
+  title: Versions supportées de la documentation
 ---
 
-{{% capture overview %}}
+<!-- overview -->
 
 Ce site contient la documentation de la version actuelle de Kubernetes et les quatre versions précédentes de Kubernetes.
 
-{{% /capture %}}
 
-{{% capture body %}}
+
+<!-- body -->
 
 ## Version courante
 
@@ -19,4 +24,4 @@ La version actuelle est [{{< param "version" >}}](/).
 
 {{< versions-other >}}
 
-{{% /capture %}}
+

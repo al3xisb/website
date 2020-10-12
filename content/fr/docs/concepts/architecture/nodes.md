@@ -2,11 +2,12 @@
 reviewers:
 - sieben
 title: Noeuds
-content_template: templates/concept
+description: Concept Noeud Kubernetes
+content_type: concept
 weight: 10
 ---
 
-{{% capture overview %}}
+<!-- overview -->
 
 Un nœud est une machine de travail dans Kubernetes, connue auparavant sous le nom de `minion`.
 Un nœud peut être une machine virtuelle ou une machine physique, selon le cluster.
@@ -14,9 +15,9 @@ Chaque nœud contient les services nécessaires à l'exécution de [pods](/docs/
 Les services sur un nœud incluent le [container runtime](/docs/concepts/overview/components/#node-components), kubelet and kube-proxy.
 Consultez la section [Le Nœud Kubernetes](https://git.k8s.io/community/contributors/design-proposals/architecture/architecture.md#the-kubernetes-node) dans le document de conception de l'architecture pour plus de détails.
 
-{{% /capture %}}
 
-{{% capture body %}}
+
+<!-- body -->
 
 ## Statut du nœud
 
@@ -143,7 +144,7 @@ Le contrôleur de noeud est responsable de la mise à jour de la condition NodeR
 Le contrôleur de nœud vérifie l'état de chaque nœud toutes les `--node-monitor-period` secondes.
 
 Dans les versions de Kubernetes antérieures à 1.13, NodeStatus correspond au heartbeat du nœud.
-À partir de Kubernetes 1.13, la fonctionnalité de bail de nœud (node lease en anglais) est introduite en tant que fonctionnalité alpha (feature gate `NodeLease`, [KEP-0009](https://github.com/kubernetes/community/blob/master/keps/sig-node/0009-node-heartbeat.md)).
+À partir de Kubernetes 1.13, la fonctionnalité de bail de nœud (node lease en anglais) est introduite en tant que fonctionnalité alpha (feature gate `NodeLease`, [KEP-0009](https://github.com/kubernetes/enhancements/blob/master/keps/sig-node/0009-node-heartbeat.md)).
 Lorsque la fonction de node lease est activée, chaque noeud a un objet `Lease` associé dans le namespace `kube-node-lease` qui est renouvelé périodiquement par le noeud, et NodeStatus et le node lease sont traités comme des heartbeat du noeud.
 Les node leases sont renouvelés fréquemment lorsque NodeStatus est signalé de nœud à master uniquement lorsque des modifications ont été apportées ou que suffisamment de temps s'est écoulé (la valeur par défaut est 1 minute, ce qui est plus long que le délai par défaut de 40 secondes pour les nœuds inaccessibles).
 Étant donné qu'un node lease est beaucoup plus léger qu'un NodeStatus, cette fonctionnalité rends le heartbeat d'un nœud nettement moins coûteux, tant du point de vue de l'évolutivité que des performances.
@@ -181,7 +182,7 @@ Pour l'auto-enregistrement (self-registration en anglais), le kubelet est lancé
   - `--kubeconfig` - Chemin d'accès aux informations d'identification pour s'authentifier auprès de l'apiserver.
   - `--cloud-provider` - Comment lire les métadonnées d'un fournisseur de cloud sur lui-même.
   - `--register-node` - Enregistrement automatique avec le serveur API.
-  - `--register-with-taints` - Enregistrez le noeud avec la liste donnée de marques (comma separated `<key>=<value>:<effect>`). Sans effet si `register-node` est à false.
+  - `--register-with-taints` - Enregistrez le noeud avec la liste donnée de marques (séparés par des virgules `<key>=<value>:<effect>`). Sans effet si `register-node` est à false.
   - `--node-ip` - Adresse IP du noeud.
   - `--node-labels` - Labels à ajouter lors de l’enregistrement du noeud dans le cluster (voir Restrictions des labels appliquées par le [plugin NodeRestriction admission](/docs/reference/access-authn-authz/admission-controllers/#noderestriction) dans les versions 1.13+).
   - `--node-status-update-frequency` - Spécifie la fréquence à laquelle kubelet publie le statut de nœud sur master.
@@ -228,4 +229,4 @@ Si vous souhaitez réserver explicitement des ressources pour des processus autr
 L'objet Node est une ressource de niveau supérieur dans l'API REST de Kubernetes.
 Plus de détails sur l'objet API peuvent être trouvés à l'adresse suivante: [Node API object](/docs/reference/generated/kubernetes-api/{{< param "version" >}}/#node-v1-core).
 
-{{% /capture %}}
+

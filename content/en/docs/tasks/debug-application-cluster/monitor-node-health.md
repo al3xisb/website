@@ -2,11 +2,11 @@
 reviewers:
 - Random-Liu
 - dchen1107
-content_template: templates/task
+content_type: task
 title: Monitor Node Health
 ---
 
-{{% capture overview %}}
+<!-- overview -->
 
 *Node problem detector* is a [DaemonSet](/docs/concepts/workloads/controllers/daemonset/) monitoring the
 node health. It collects node problems from various daemons and reports them
@@ -23,15 +23,16 @@ introduced to deal with node problems.
 See more information
 [here](https://github.com/kubernetes/node-problem-detector).
 
-{{% /capture %}}
 
-{{% capture prerequisites %}}
+
+## {{% heading "prerequisites" %}}
+
 
 {{< include "task-tutorial-prereqs.md" >}} {{< version-check >}}
 
-{{% /capture %}}
 
-{{% capture steps %}}
+
+<!-- steps -->
 
 ## Limitations
 
@@ -44,7 +45,7 @@ it to [support other log format](/docs/tasks/debug-application-cluster/monitor-n
 
 ## Enable/Disable in GCE cluster
 
-Node problem detector is [running as a cluster addon](/docs/setup/cluster-large/#addon-resources) enabled by default in the
+Node problem detector is [running as a cluster addon](/docs/setup/best-practices/cluster-large/#addon-resources) enabled by default in the
 gce cluster.
 
 You can enable/disable it by setting the environment variable
@@ -162,9 +163,9 @@ Kernel monitor uses [`Translator`](https://github.com/kubernetes/node-problem-de
 plugin to translate kernel log the internal data structure. It is easy to
 implement a new translator for a new log format.
 
-{{% /capture %}}
 
-{{% capture discussion %}}
+
+<!-- discussion -->
 
 ## Caveats
 
@@ -177,4 +178,4 @@ resource overhead on each node. Usually this is fine, because:
 * Even under high load, the resource usage is acceptable.
 (see [benchmark result](https://github.com/kubernetes/node-problem-detector/issues/2#issuecomment-220255629))
 
-{{% /capture %}}
+

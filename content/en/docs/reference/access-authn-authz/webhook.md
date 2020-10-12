@@ -5,15 +5,15 @@ reviewers:
 - deads2k
 - liggitt
 title: Webhook Mode
-content_template: templates/concept
+content_type: concept
 weight: 95
 ---
 
-{{% capture overview %}}
+<!-- overview -->
 A WebHook is an HTTP callback: an HTTP POST that occurs when something happens; a simple event-notification via HTTP POST. A web application implementing WebHooks will POST a message to a URL when certain things happen.
-{{% /capture %}}
 
-{{% capture body %}}
+
+<!-- body -->
 When specified, mode `Webhook` causes Kubernetes to query an outside REST
 service when determining user privileges.
 
@@ -108,7 +108,13 @@ the request and respond to either allow or disallow access. The response body's
 }
 ```
 
-To disallow access, the remote service would return:
+For disallowing access there are two methods.
+
+The first method is preferred in most cases, and indicates the authorization
+webhook does not allow, or has "no opinion" about the request, but if other 
+authorizers are configured, they are given a chance to allow the request. 
+If there are no other authorizers, or none of them allow the request, the 
+request is forbidden. The webhook would return:
 
 ```json
 {
@@ -116,6 +122,23 @@ To disallow access, the remote service would return:
   "kind": "SubjectAccessReview",
   "status": {
     "allowed": false,
+    "reason": "user does not have read access to the namespace"
+  }
+}
+```
+
+The second method denies immediately, short-circuiting evaluation by other 
+configured authorizers. This should only be used by webhooks that have 
+detailed knowledge of the full authorizer configuration of the cluster. 
+The webhook would return:
+
+```json
+{
+  "apiVersion": "authorization.k8s.io/v1beta1",
+  "kind": "SubjectAccessReview",
+  "status": {
+    "allowed": false,
+    "denied": true,
     "reason": "user does not have read access to the namespace"
   }
 }
@@ -141,8 +164,8 @@ Access to non-resource paths are sent as:
 }
 ```
 
-Non-resource paths include: `/api`, `/apis`, `/metrics`, `/resetMetrics`,
-`/logs`, `/debug`, `/healthz`, `/swagger-ui/`, `/swaggerapi/`, `/ui`, and
+Non-resource paths include: `/api`, `/apis`, `/metrics`,
+`/logs`, `/debug`, `/healthz`, `/livez`, `/openapi/v2`, `/readyz`, and
 `/version.` Clients require access to `/api`, `/api/*`, `/apis`, `/apis/*`,
 and `/version` to discover what resources and versions are present on the server.
 Access to other non-resource paths can be disallowed without restricting access
@@ -150,7 +173,4 @@ to the REST api.
 
 For further documentation refer to the authorization.v1beta1 API objects and
 [webhook.go](https://github.com/kubernetes/kubernetes/blob/{{< param "githubbranch" >}}/staging/src/k8s.io/apiserver/plugin/pkg/authorizer/webhook/webhook.go).
-
-{{% /capture %}}
-
 

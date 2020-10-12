@@ -1,28 +1,29 @@
-﻿<!--
+﻿---
+title: 访问集群
+weight: 20
+content_type: concept
+---
+
+<!--
 ---
 title: Accessing Clusters
 weight: 20
-content_template: templates/concept
+content_type: concept
 ---
 -->
----
-title: 访问集群
-weight: 20
-content_template: templates/concept
----
 
-{{% capture overview %}}
+<!-- overview -->
 
 <!--
 This topic discusses multiple ways to interact with clusters.
 -->
 本文阐述多种与集群交互的方法。
 
-{{% /capture %}}
+
 
 {{< toc >}}
 
-{{% capture body %}}
+<!-- body -->
 
 <!--
 ## Accessing for the first time with kubectl
@@ -41,7 +42,7 @@ Check the location and credentials that kubectl knows about with this command:
 
 当您第一次访问 Kubernetes API 的时候，我们建议您使用 Kubernetes CLI，`kubectl`。
 
-访问集群时，您需要知道集群的地址并且拥有访问的凭证。通常，这些在您通过 [Getting started guide](/docs/setup/) 安装集群时都是自动安装好的，或者其他人安装时也应该提供了凭证和集群地址。
+访问集群时，您需要知道集群的地址并且拥有访问的凭证。通常，这些在您通过 [Getting started guide](/zh/docs/setup/) 安装集群时都是自动安装好的，或者其他人安装时也应该提供了凭证和集群地址。
 
 通过以下命令检查 kubectl 是否知道集群地址及凭证：
 
@@ -70,7 +71,7 @@ curl or wget, or a browser, there are several ways to locate and authenticate:
     - Works with some types of client code that are confused by using a proxy.
     - Need to import a root cert into your browser to protect against MITM.
 -->
-有许多 [例子](/docs/user-guide/kubectl-cheatsheet) 介绍了如何使用 kubectl，可以在 [kubectl手册](/docs/user-guide/kubectl-overview) 中找到更完整的文档。
+有许多 [例子](/zh/docs/reference/kubectl/cheatsheet/) 介绍了如何使用 kubectl，可以在 [kubectl手册](/zh/docs/reference/kubectl/overview/) 中找到更完整的文档。
 
 ## 直接访问 REST API
 Kubectl 处理 apiserver 的定位和身份验证。
@@ -117,8 +118,15 @@ with [::1] for IPv6, like so:
 ```shell
 $ curl http://localhost:8080/api/
 {
+  "kind": "APIVersions",
   "versions": [
     "v1"
+  ],
+  "serverAddressByClientCIDRs": [
+    {
+      "clientCIDR": "0.0.0.0/0",
+      "serverAddress": "10.0.1.149:443"
+    }
   ]
 }
 ```
@@ -137,7 +145,7 @@ In Kubernetes version 1.3 or later, `kubectl config view` no longer displays the
 
 ```shell
 $ APISERVER=$(kubectl config view | grep server | cut -f 2- -d ":" | tr -d " ")
-$ TOKEN=$(kubectl describe secret $(kubectl get secrets | grep default | cut -f1 -d ' ') | grep -E '^token' | cut -f2 -d':' | tr -d '\t')
+$ TOKEN=$(kubectl describe secret $(kubectl get secrets | grep default | cut -f1 -d ' ') | grep -E '^token' | cut -f2 -d':' | tr -d ' ')
 $ curl $APISERVER/api --header "Authorization: Bearer $TOKEN" --insecure
 {
   "kind": "APIVersions",
@@ -189,7 +197,7 @@ with future high-availability support.
 -->
 上面的例子使用了 `--insecure` 参数，这使得它很容易受到 MITM 攻击。当 kubectl 访问集群时，它使用存储的根证书和客户端证书来访问服务器（这些安装在 `~/.kube` 目录中）。由于集群证书通常是自签名的，因此可能需要特殊配置才能让您的 http 客户端使用根证书。
 
-在一些集群中，apiserver 不需要身份验证；它可能只服务于 localhost，或者被防火墙保护，这个没有一定的标准。 [配置对 API 的访问](/docs/admin/accessing-the-api) 描述了集群管理员如何进行配置。此类方法可能与未来的高可用性支持相冲突。
+在一些集群中，apiserver 不需要身份验证；它可能只服务于 localhost，或者被防火墙保护，这个没有一定的标准。 [配置对 API 的访问](/zh/docs/reference/access-authn-authz/controlling-access/) 描述了集群管理员如何进行配置。此类方法可能与未来的高可用性支持相冲突。
 
 <!--
 ## Programmatic access to the API
@@ -216,7 +224,7 @@ Kubernetes 官方提供对 [Go](#go-client) 和 [Python](#python-client) 的客�
 * 想要获得这个库，请运行命令：`go get k8s.io/client-go/<version number>/kubernetes`。参阅 [https://github.com/kubernetes/client-go](https://github.com/kubernetes/client-go) 来查看目前支持哪些版本。
 * 基于这个 client-go 客户端库编写应用程序。 请注意，client-go 定义了自己的 API 对象，因此如果需要，请从 client-go 而不是从主存储库导入 API 定义，例如，`import "k8s.io/client-go/1.4/pkg/api/v1"` 才是对的。
 
-Go 客户端可以像 kubectl CLI 一样使用相同的 [kubeconfig 文件](/docs/concepts/cluster-administration/authenticate-across-clusters-kubeconfig/) 来定位和验证 apiserver。可参阅 [示例](https://git.k8s.io/client-go/examples/out-of-cluster-client-configuration/main.go)。
+Go 客户端可以像 kubectl CLI 一样使用相同的 [kubeconfig 文件](/zh/docs/tasks/access-application-cluster/configure-access-multiple-clusters/) 来定位和验证 apiserver。可参阅 [示例](https://git.k8s.io/client-go/examples/out-of-cluster-client-configuration/main.go)。
 
 如果应用程序以 Pod 的形式部署在集群中，那么请参阅 [下一章](#accessing-the-api-from-a-pod)。
 
@@ -226,7 +234,7 @@ Go 客户端可以像 kubectl CLI 一样使用相同的 [kubeconfig 文件](/doc
 To use [Python client](https://github.com/kubernetes-client/python), run the following command: `pip install kubernetes`. See [Python Client Library page](https://github.com/kubernetes-client/python) for more installation options.
 
 The Python client can use the same [kubeconfig file](/docs/concepts/cluster-administration/authenticate-across-clusters-kubeconfig/)
-as the kubectl CLI does to locate and authenticate to the apiserver. See this [example](https://github.com/kubernetes-client/python/tree/master/examples/example1.py).
+as the kubectl CLI does to locate and authenticate to the apiserver. See this [example](https://github.com/kubernetes-client/python/tree/master/examples).
 
 ### Other languages
 
@@ -237,11 +245,11 @@ See documentation for other libraries for how they authenticate.
 
 如果想要使用 [Python 客户端](https://github.com/kubernetes-client/python)，请运行命令：`pip install kubernetes`。参阅 [Python Client Library page](https://github.com/kubernetes-client/python) 以获得更详细的安装参数。
 
-Python 客户端可以像 kubectl CLI 一样使用相同的 [kubeconfig 文件](/docs/concepts/cluster-administration/authenticate-across-clusters-kubeconfig/) 来定位和验证 apiserver，可参阅 [示例](https://github.com/kubernetes-client/python/tree/master/examples/example1.py)。
+Python 客户端可以像 kubectl CLI 一样使用相同的 [kubeconfig 文件](/zh/docs/tasks/access-application-cluster/configure-access-multiple-clusters/) 来定位和验证 apiserver，可参阅 [示例](https://github.com/kubernetes-client/python/tree/master/examples)。
 
 ### 其它语言
 
-目前有多个 [客户端库](/docs/reference/using-api/client-libraries/) 为其它语言提供访问 API 的方法。
+目前有多个 [客户端库](/zh/docs/reference/using-api/client-libraries/) 为其它语言提供访问 API 的方法。
 参阅其它库的相关文档以获取他们是如何验证的。
 
 <!--
@@ -260,13 +268,13 @@ is associated with a service account, and a credential (token) for that
 service account is placed into the filesystem tree of each container in that pod,
 at `/var/run/secrets/kubernetes.io/serviceaccount/token`.
 -->
-### 从 Pod 中访问 API
+### 从 Pod 中访问 API   {#accessing-the-api-from-a-pod}
 
 当你从 Pod 中访问 API 时，定位和验证 apiserver 会有些许不同。
 
 在 Pod 中定位 apiserver 的推荐方式是通过 `kubernetes.default.svc` 这个 DNS 名称，该名称将会解析为服务 IP，然后服务 IP 将会路由到 apiserver。
 
-向 apiserver 进行身份验证的推荐方法是使用 [服务帐户](/docs/tasks/configure-pod-container/configure-service-account/) 凭据。
+向 apiserver 进行身份验证的推荐方法是使用 [服务帐户](/zh/docs/tasks/configure-pod-container/configure-service-account/) 凭据。
 通过 kube-system，pod 与服务帐户相关联，并且该服务帐户的凭证（token）被放置在该 pod 中每个容器的文件系统中，位于 `/var/run/secrets/kubernetes.io/serviceaccount/token`。
 
 <!--
@@ -311,10 +319,10 @@ their own IPs.  In many cases, the node IPs, pod IPs, and some service IPs on a 
 routable, so they will not be reachable from a machine outside the cluster,
 such as your desktop machine.
 -->
-## 访问集群中正在运行的服务
+## 访问集群中正在运行的服务  {#accessing-services-running-on-the-cluster}
 
-上一节介绍了如何连接 Kubernetes API 服务。本节介绍如何连接到 Kubernetes 集群上运行的其他服务。 
-在 Kubernetes 中，[节点](/docs/admin/node)，[pods](/docs/user-guide/pods) 和 [服务](/docs/user-guide/services) 都有自己的 IP。
+上一节介绍了如何连接 Kubernetes API 服务。本节介绍如何连接到 Kubernetes 集群上运行的其他服务。
+在 Kubernetes 中，[节点](/zh/docs/concepts/architecture/nodes/)，[pods](/zh/docs/concepts/workloads/pods/) 和 [服务](/zh/docs/concepts/services-networking/service/) 都有自己的 IP。
 在许多情况下，集群上的节点 IP，pod IP 和某些服务 IP 将无法路由，因此无法从集群外部的计算机（例如桌面计算机）访问它们。
 
 <!--
@@ -353,7 +361,7 @@ You have several options for connecting to nodes, pods and services from outside
 
   - 通过公共 IP 访问服务。
     - 类型为 `NodePort` 或 `LoadBalancer` 的服务，集群外部可以访问。
-      请参阅 [服务](/docs/user-guide/services) 和 [kubectl expose](/docs/reference/generated/kubectl/kubectl-commands/#expose) 文档。
+      请参阅 [服务](/zh/docs/concepts/services-networking/service/) 和 [kubectl expose](/docs/reference/generated/kubectl/kubectl-commands/#expose) 文档。
     - 取决于您的集群环境，该服务可能仅暴露给您的公司网络，或者也可能暴露给整个互联网。
       请考虑公开该服务是否安全。它是否进行自己的身份验证？
     - 在服务后端放置 pod。要从一组副本中访问一个特定的 pod，例如进行调试，请在 pod 上放置一个唯一的标签，然后创建一个选择此标签的新服务。
@@ -499,14 +507,14 @@ The redirect capabilities have been deprecated and removed.  Please use a proxy 
 There are several different proxies you may encounter when using Kubernetes:
 
 1.  The [kubectl proxy](#directly-accessing-the-rest-api):
-  
+
     - runs on a user's desktop or in a pod
     - proxies from a localhost address to the Kubernetes apiserver
     - client to proxy uses HTTP
     - proxy to apiserver uses HTTPS
     - locates apiserver
     - adds authentication headers
-    
+
 -->
 ## 多种代理
 
@@ -520,10 +528,10 @@ There are several different proxies you may encounter when using Kubernetes:
     - 代理到 apiserver 使用 HTTPS
     - 定位 apiserver
     - 添加身份验证 header
-    
+
 <!--
 1.  The [apiserver proxy](#discovering-builtin-services):
-  
+
     - is a bastion built into the apiserver
     - connects a user outside of the cluster to cluster IPs which otherwise might not be reachable
     - runs in the apiserver processes
@@ -532,7 +540,7 @@ There are several different proxies you may encounter when using Kubernetes:
     - can be used to reach a Node, Pod, or Service
     - does load balancing when used to reach a Service
 -->
-1.  [apiserver 代理](#discovering-builtin-services)：
+2.  [apiserver 代理](#discovering-builtin-services)：
 
     - 内置于 apiserver 中
     - 将集群外部的用户连接到集群 IP，否则这些 IP 可能无法访问
@@ -541,40 +549,40 @@ There are several different proxies you may encounter when using Kubernetes:
     - 代理将根据可用的信息决定使用 HTTP 或者 HTTPS 代理到目标
     - 可用于访问节点、Pod 或服务
     - 在访问服务时进行负载平衡
-    
+
 <!--
 1.  The [kube proxy](/docs/concepts/services-networking/service/#ips-and-vips):
-  
+
     - runs on each node
     - proxies UDP and TCP
     - does not understand HTTP
     - provides load balancing
     - is just used to reach services
 -->
-1.  [kube proxy](/docs/concepts/services-networking/service/#ips-and-vips)：
-  
+3.  [kube proxy](/zh/docs/concepts/services-networking/service/#ips-and-vips)：
+
     - 运行在每个节点上
     - 代理 UDP 和 TCP
     - 不能代理 HTTP
     - 提供负载均衡
     - 只能用来访问服务
-    
+
 <!--
 1.  A Proxy/Load-balancer in front of apiserver(s):
-  
+
     - existence and implementation varies from cluster to cluster (e.g. nginx)
     - sits between all clients and one or more apiservers
     - acts as load balancer if there are several apiservers.
 -->
-1.  位于 apiserver 之前的 Proxy/Load-balancer：
-  
+4.  位于 apiserver 之前的 Proxy/Load-balancer：
+
     - 存在和实现因集群而异（例如 nginx）
     - 位于所有客户和一个或多个 apiserver 之间
     - 如果有多个 apiserver，则充当负载均衡器
-    
+
 <!--
 1.  Cloud Load Balancers on external services:
-  
+
     - are provided by some cloud providers (e.g. AWS ELB, Google Cloud Load Balancer)
     - are created automatically when the Kubernetes service has type `LoadBalancer`
     - use UDP/TCP only
@@ -583,13 +591,11 @@ There are several different proxies you may encounter when using Kubernetes:
 Kubernetes users will typically not need to worry about anything other than the first two types.  The cluster admin
 will typically ensure that the latter types are setup correctly.
 -->
-1.  外部服务上的云负载均衡器：
-  
+5.  外部服务上的云负载均衡器：
+
     - 由一些云提供商提供（例如 AWS ELB，Google Cloud Load Balancer）
     - 当 Kubernetes 服务类型为 `LoadBalancer` 时自动创建
     - 只使用 UDP/TCP
     - 具体实现因云提供商而异。
 
 除了前两种类型之外，Kubernetes 用户通常不需要担心任何其他问题。集群管理员通常会确保后者的正确配置。
-
-{{% /capture %}}

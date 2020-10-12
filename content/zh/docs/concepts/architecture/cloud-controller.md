@@ -1,175 +1,250 @@
-title: 云控制器管理器的基本概念
+---
+title: 云控制器管理器的基础概念
+content_type: concept
+weight: 40
+---
 
-## 云控制器管理器
+<!--
+title: Concepts Underlying the Cloud Controller Manager
+content_type: concept
+weight: 40
+-->
 
-云控制器管理器（CCM）这个概念创建的初衷是为了让特定的云服务供应商代码和Kubernetes核心相互独立演化。云控制器管理器与其他主要组件如Kubernetes控制器管理器，API服务器和调度程序同时运行。云控制器管理器也可以作为Kubernetes的插件启动，这种情况下，CCM运行在Kubernetes系统之上。
+<!-- overview -->
 
-云控制器管理器基于插件机制设计，允许新的云服务供应商通过插件轻松地与Kubernetes集成。目前已经有在Kubernetes上加入新的云服务供应商计划，并为云服务供应商提供从原先的旧模式迁移到新CCM模式的方案。
+{{< feature-state state="beta" for_k8s_version="v1.11" >}}
 
-本文讨论了云控制器管理器背后的概念，并提供了相关功能的详细信息。
+<!--
+Cloud infrastructure technologies let you run Kubernetes on public, private, and hybrid clouds.
+Kubernetes believes in automated, API-driven infrastructure without tight coupling between
+components.
+-->
+使用云基础设施技术，你可以在共有云、私有云或者混合云环境中运行 Kubernetes。
+Kubernetes 的信条是基于自动化的、API 驱动的基础设施，同时避免组件间紧密耦合。
 
-下面这张图描述了没有云控制器管理器的Kubernetes集群架构：
+{{< glossary_definition term_id="cloud-controller-manager" length="all" prepend="组件 cloud-controller-manager 是">}}
 
-![无云控制器管理器的 K8s 集群架构](/images/docs/pre-ccm-arch.png)
+<!--
+The cloud-controller-manager is structured using a plugin
+mechanism that allows different cloud providers to integrate their platforms with Kubernetes.
+-->
+`cloud-controller-manager` 组件是基于一种插件机制来构造的，
+这种机制使得不同的云厂商都能将其平台与 Kubernetes 集成。
 
-## 设计
+<!-- body -->
+<!--
+## Design
 
-在上图中，Kubernetes和云服务供应商通过几个不同的组件进行了集成，分别是：
+![Kubernetes components](/images/docs/components-of-kubernetes.png)
 
-* Kubelet
-* Kubernetes 控制管理器
-* Kubernetes API服务器
+The cloud controller manager runs in the control plane as a replicated set of processes
+(usually, these are containers in Pods). Each cloud-controller-manager implements
+multiple {{< glossary_tooltip text="controllers" term_id="controller" >}} in a single
+process.
+-->
+## 设计  {#design}
 
-而CCM整合了前三个组件中的所有依赖于云的逻辑，用来创建与云的单点集成。新架构如下图所示：
+![Kubernetes 组件](/images/docs/components-of-kubernetes.png)
 
-![有云控制器管理器的 K8s 集群架构](/images/docs/post-ccm-arch.png)
+云控制器管理器以一组多副本的进程集合的形式运行在控制面中，通常表现为 Pod
+中的容器。每个 `cloud-controller-manager` 在同一进程中实现多个
+{{< glossary_tooltip text="控制器" term_id="controller" >}}。
 
-## CCM的组件
+<!--
+You can also run the cloud controller manager as a Kubernetes
+{{< glossary_tooltip text="addon" term_id="addons" >}} rather than as part
+of the control plane.
+-->
+{{< note >}}
+你也可以以 Kubernetes {{< glossary_tooltip text="插件" term_id="addons" >}} 
+的形式而不是控制面中的一部分来运行云控制器管理器。
+{{< /note >}}
 
-CCM突破了Kubernetes控制器管理器（KCM）的一些功能，并将其作为一个独立的进程运行。具体而言，它打破了KCM中与云相关的控制器。KCM具有以下依赖于云的控制器引擎：
+<!--
+## Cloud controller manager functions {#functions-of-the-ccm}
 
-* 节点控制器
-* 卷控制器
-* 路由控制器
-* 服务控制器
+The controllers inside the cloud controller manager include:
+-->
+## 云控制器管理器的功能 {#functions-of-the-ccm}
 
-在1.8版本中，当前运行中的CCM从上面的列表中运行以下控制器：
+云控制器管理器中的控制器包括：
 
-* 节点控制器
-* 路由控制器
-* 服务控制器
+<!--
+### Node controller
 
-另外，它运行另一个名为 PersistentVolumeLabels Controller 的控制器。这个控制器负责对在GCP和AWS云里创建的PersistentVolumes的域（Zone）和区（Region）标签进行设置。
+The node controller is responsible for creating {{< glossary_tooltip text="Node" term_id="node" >}} objects
+when new servers are created in your cloud infrastructure. The node controller obtains information about the
+hosts running inside your tenancy with the cloud provider. The node controller performs the following functions:
+-->
+### 节点控制器   {#node-controller}
 
-**注意**：卷控制器被特意设计为CCM之外的一部分。由于其中涉及到的复杂性和对现有供应商特定卷的逻辑抽象，因此决定了卷控制器不会被移动到CCM之中。
+节点控制器负责在云基础设施中创建了新服务器时为之 创建
+{{< glossary_tooltip text="节点（Node）" term_id="node" >}}对象。
+节点控制器从云提供商获取当前租户中主机的信息。节点控制器执行以下功能：
 
-原本计划使用CCM来支持卷的目的是为了引入FlexVolume卷来支持可插拔卷。然而，官方正在计划使用更具备竞争力的CSI来取代FlexVolume卷。
+<!--
+1. Initialize a Node object for each server that the controller discovers through the cloud provider API.
+2. Annotating and labelling the Node object with cloud-specific information, such as the region the node
+   is deployed into and the resources (CPU, memory, etc) that it has available.
+3. Obtain the node's hostname and network addresses.
+4. Verifying the node's health. In case a node becomes unresponsive, this controller checks with
+   your cloud provider's API to see if the server has been deactivated / deleted / terminated.
+   If the node has been deleted from the cloud, the controller deletes the Node object from your Kubernetes
+   cluster.
+-->
+1. 针对控制器通过云平台驱动的 API 所发现的每个服务器初始化一个 Node 对象；
+2. 利用特定云平台的信息为 Node 对象添加注解和标签，例如节点所在的
+   区域（Region）和所具有的资源（CPU、内存等等）；
+3. 获取节点的网络地址和主机名；
+4. 检查节点的健康状况。如果节点无响应，控制器通过云平台 API ll 查看该节点是否
+   已从云中禁用、删除或终止。如果节点已从云中删除，则控制器从 Kubernetes 集群
+   中删除 Node 对象。
 
-考虑到这些正在进行中的变化，我们决定暂时停止当前工作直至CSI准备就绪。
+<!--
+Some cloud provider implementations split this into a node controller and a separate node
+lifecycle controller.
+-->
+某些云驱动实现中，这些任务被划分到一个节点控制器和一个节点生命周期控制器中。
 
-云服务供应商工作组（wg-cloud-provider）正在开展相关工作，以实现通过CCM支持PersistentVolume的功能。详细信息请参见[kubernetes/kubernetes＃52371](https://github.com/kubernetes/kubernetes/pull/52371)。
+<!--
+### Route controller
 
-## CCM功能
+The route controller is responsible for configuring routes in the cloud
+appropriately so that containers on different nodes in your Kubernetes
+cluster can communicate with each other.
 
-CCM从Kubernetes组件中继承了与云服务供应商相关的功能。本节基于被CCM继承其功能的组件展开描述。
+Depending on the cloud provider, the route controller might also allocate blocks
+of IP addresses for the Pod network.
+-->
+### 路由控制器   {#route-controller}
 
-### 1. Kubernetes 控制器管理器
+Route 控制器负责适当地配置云平台中的路由，以便 Kubernetes 集群中不同节点上的
+容器之间可以相互通信。
 
-CCM的大部分功能都来自KCM。 如上一节所述，CCM运行以下控制引擎：
+取决于云驱动本身，路由控制器可能也会为 Pod 网络分配 IP 地址块。
 
-* 节点控制器
-* 路由控制器
-* 服务控制器
-* PersistentVolumeLabels控制器
+<!--
+### Service controller
 
-#### 节点控制器
+{< glossary_tooltip text="Services" term_id="service" >}} integrate with cloud
+infrastructure components such as managed load balancers, IP addresses, network
+packet filtering, and target health checking. The service controller interacts with your
+cloud provider's APIs to set up load balancers and other infrastructure components
+when you declare a Service resource that requires them.
+-->
+### 服务控制器   {#service-controller}
 
-节点控制器负责通过从云服务供应商获得有关在集群中运行的节点的信息来初始化节点。节点控制器执行以下功能：
+{{< glossary_tooltip text="服务（Service）" term_id="service" >}}与受控的负载均衡器、
+IP 地址、网络包过滤、目标健康检查等云基础设施组件集成。
+服务控制器与云驱动的 API 交互，以配置负载均衡器和其他基础设施组件。
+你所创建的 Service 资源会需要这些组件服务。
 
-1.使用云特定域（Zone）/区（Region）标签初始化节点。
+<!--
+## Authorization
 
-1.使用特定于云的实例详细信息初始化节点，例如类型和大小。
+This section breaks down the access that the cloud controller managers requires
+on various API objects, in order to perform its operations.
+-->
+## 鉴权   {#authorization}
 
-1.获取节点的网络地址和主机名。
+本节分别讲述云控制器管理器为了完成自身工作而产生的对各类 API 对象的访问需求。
 
-1.如果节点无响应，检查该节点是否已从云中删除。如果该节点已从云中删除，则删除Kubernetes节点对象。
+<!--
+### Node controller {#authorization-node-controller}
 
-#### 路由控制器
+The Node controller only works with Node objects. It requires full access
+to read and modify Node objects.
+-->
+### 节点控制器  {#authorization-node-controller}
 
-路由控制器负责为云配置正确的路由，以便Kubernetes集群中不同节点上的容器可以相互通信。路由控制器仅适用于Google Compute Engine平台。
+节点控制器只操作 Node 对象。它需要读取和修改 Node 对象的完全访问权限。
 
-#### 服务控制器
+`v1/Node`:
 
-服务控制器负责监听服务的创建、更新和删除事件。根据Kubernetes中各个服务的当前状态，它将配置云负载平衡器（如ELB或Google LB）以反映Kubernetes中的服务状态。此外，它还确保云负载均衡器的服务后端保持最新。
-
-#### PersistentVolumeLabels 控制器
-
-PersistentVolumeLabels控制器在AWS的EBS卷、GCE的PD卷创建时申请标签，这使得用户不再需要手动设置这些卷标签。
-
-这些标签对于pod的调度工作是非常重要的，因为这些卷只能在它们所在的域（Zone）/区（Region）内工作，因此所有使用这些卷的pod都必须要在同一个域/区中才能保证进行调度正常进行。
-
-PersistentVolumeLabels控制器是专门为CCM创建的; 也就是说，在CCM创建之前它是不存在的。这样做是为了将Kubernetes API服务器（它是一个许可控制器）中的PV标签逻辑移动到CCM。 它不在KCM上运行。
-
-### 2. Kubelet
-
-Node控制器包含kubelet中依赖于云的功能。在系统引入CCM组件之前，是由kubelet采用包含云特定信息的方式对节点进行初始化，如IP地址、区（Region）/域（Zone）标签和实例类型信息；引入CCM之后，这部分的初始化操作就从kubelet转移到了CCM中。
-
-在引入CCM后的新的模型中，kubelet采用不包含云特定信息的方式初始化一个节点。但是，它会为新创建的节点添加一个污点，使得该节点不可被立即调度，直到CCM使用包含云的特定信息初始化节点后，才会删除该污点，使得该节点可被调度。
-
-### 3. Kubernetes API服务器
-
-PersistentVolumeLabels控制器将Kubernetes API服务器的依赖于云的功能移至CCM，如前面部分所述。
-
-## 插件机制
-
-云控制器管理器使用Go接口与外部对接从而实现功能扩展。具体来说，它使用了[这里](https://github.com/kubernetes/kubernetes/blob/master/pkg/cloudprovider/cloud.go)定义的CloudProvider接口。
-
-上面强调的四个共享控制器的实现，以及一些辅助设施（scaffolding）和共享的云服务供应商接口，将被保留在Kubernetes核心当中。但云服务供应商特有的实现将会建立在核心之外，并实现核心中定义的接口。
-
-有关开发插件的更多信息，请参阅
-[开发云控制器管理器](/docs/tasks/administrators-cluster/developing-cloud-controller-manager/)。
-
-## 授权
-
-本节分解了CCM对各种API对象的访问，以执行其操作。
-
-### 节点控制器
-
-节点控制器仅适用于节点对象。它需要完全访问权限来获取、列出、创建、更新、修补、监视和删除节点对象。
-
-v1/Node: 
 - Get
 - List
 - Create
 - Update
 - Patch
 - Watch
+- Delete
 
-### 路由控制器
+<!--
+### Route controller {#authorization-route-controller}
 
-路由控制器监听节点对象的创建并配置合适的路由。它需要对节点对象的访问权限。
+The route controller listens to Node object creation and configures
+routes appropriately. It requires Get access to Node objects.
+-->
+### 路由控制器 {#authorization-route-controller}
 
-v1/Node: 
+路由控制器会监听 Node 对象的创建事件，并据此配置路由设施。
+它需要读取 Node 对象的 Get 权限。
+
+`v1/Node`:
+
 - Get
 
-### 服务控制器
+<!--
+### Service controller {#authorization-service-controller}
 
-服务控制器侦听服务对象创建、更新和删除事件，然后对这些服务的端点进行恰当的配置。
+The service controller listens to Service object Create, Update and Delete events and then configures Endpoints for those Services appropriately.
 
-要访问服务，它需要罗列和监控权限。要更新服务，它需要修补和更新权限。
+To access Services, it requires List, and Watch access. To update Services, it requires Patch and Update access.
 
-要为服务设置端点，需要访问创建、列表、获取、监视和更新。
+To set up Endpoints resources for the Services, it requires access to Create, List, Get, Watch, and Update.
+-->
+### 服务控制器 {#authorization-service-controller}
 
-v1/Service:
+服务控制器监测 Service 对象的 Create、Update 和 Delete 事件，并配置
+对应服务的 Endpoints 对象。
+为了访问 Service 对象，它需要 List、Watch 访问权限；为了更新 Service 对象
+它需要 Patch 和 Update 访问权限。
+为了能够配置 Service 对应的 Endpoints 资源，它需要 Create、List、Get、Watch
+和 Update 等访问权限。
+
+`v1/Service`:
+
 - List
 - Get
 - Watch
 - Patch
 - Update
 
-### PersistentVolumeLabels 控制器
+<!--
+### Others {#authorization-miscellaneous}
 
-PersistentVolumeLabels控制器监听PersistentVolume（PV）创建事件并更新它们。该控制器需要访问列表、查看、获取和更新PV的权限。
+The implementation of the core of the cloud controller manager requires access to create Event objects, and to ensure secure operation, it requires access to create ServiceAccounts.
 
-v1/PersistentVolume:
-- Get
-- List
-- Watch
-- Update
+`v1/Event`:
 
-### 其它
-
-CCM核心的实现需要创建事件的权限，为了确保安全操作，需要创建ServiceAccounts的权限。
-
-v1/Event:
 - Create
 - Patch
 - Update
 
-v1/ServiceAccount:
+`v1/ServiceAccount`:
+
 - Create
 
-针对CCM的RBAC ClusterRole如下所示：
+The {{< glossary_tooltip term_id="rbac" text="RBAC" >}} ClusterRole for the cloud
+controller manager looks like:
+-->
+### 其他  {#authorization-miscellaneous}
+
+云控制器管理器的实现中，其核心部分需要创建 Event 对象的访问权限以及
+创建 ServiceAccount 资源以保证操作安全性的权限。
+
+`v1/Event`:
+
+- Create
+- Patch
+- Update
+
+`v1/ServiceAccount`:
+
+- Create
+
+用于云控制器管理器 {{< glossary_tooltip term_id="rbac" text="RBAC" >}}
+的 ClusterRole 如下例所示：
 
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -233,17 +308,37 @@ rules:
   - update
 ```
 
-## 供应商实施
+## {{% heading "whatsnext" %}}
 
-以下云服务供应商为自己的云部署了CCM。
+<!--
+[Cloud Controller Manager Administration](/docs/tasks/administer-cluster/running-cloud-controller/#cloud-controller-manager)
+has instructions on running and managing the cloud controller manager.
 
-* [Digital Ocean](https://github.com/digitalocean/digitalocean-cloud-controller-manager)
-* [Oracle](https://github.com/oracle/oci-cloud-controller-manager)
-* [Azure](https://github.com/kubernetes/kubernetes/tree/master/pkg/cloudprovider/providers/azure)
-* [GCE](https://github.com/kubernetes/kubernetes/tree/master/pkg/cloudprovider/providers/gce)
-* [AWS](https://github.com/kubernetes/kubernetes/tree/master/pkg/cloudprovider/providers/aws)
-* [BaiduCloud](https://github.com/baidu/cloud-provider-baiducloud)
+Want to know how to implement your own cloud controller manager, or extend an existing project?
+-->
+[云控制器管理器的管理](/zh/docs/tasks/administer-cluster/running-cloud-controller/#cloud-controller-manager)
+给出了运行和管理云控制器管理器的指南。
 
-## 群集管理
+想要了解如何实现自己的云控制器管理器，或者对现有项目进行扩展么？
 
-[这里](/docs/tasks/administer-cluster/running-cloud-controller/#cloud-controller-manager)提供了配置和运行CCM的完整说明。
+<!--
+The cloud controller manager uses Go interfaces to allow implementations from any cloud to be plugged in. Specifically, it uses the `CloudProvider` interface defined in [`cloud.go`](https://github.com/kubernetes/cloud-provider/blob/release-1.17/cloud.go#L42-L62) from [kubernetes/cloud-provider](https://github.com/kubernetes/cloud-provider).
+-->
+云控制器管理器使用 Go 语言的接口，从而使得针对各种云平台的具体实现都可以接入。
+其中使用了在 [kubernetes/cloud-provider](https://github.com/kubernetes/cloud-provider)
+项目中 [`cloud.go`](https://github.com/kubernetes/cloud-provider/blob/release-1.17/cloud.go#L42-L62)
+文件所定义的 `CloudProvider` 接口。
+
+<!--
+The implementation of the shared controllers highlighted in this document (Node, Route, and Service), and some scaffolding along with the shared cloudprovider interface, is part of the Kubernetes core. Implementations specific to cloud providers are outside the core of Kubernetes and implement the `CloudProvider` interface.
+
+For more information about developing plugins, see [Developing Cloud Controller Manager](/docs/tasks/administer-cluster/developing-cloud-controller-manager/).
+-->
+本文中列举的共享控制器（节点控制器、路由控制器和服务控制器等）的实现以及
+其他一些生成具有 CloudProvider 接口的框架的代码，都是 Kubernetes 的核心代码。
+特定于云驱动的实现虽不是 Kubernetes 核心成分，仍要实现 `CloudProvider` 接口。
+
+关于如何开发插件的详细信息，可参考
+[开发云控制器管理器](/zh/docs/tasks/administer-cluster/developing-cloud-controller-manager/)
+文档。
+

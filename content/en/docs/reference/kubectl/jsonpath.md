@@ -1,14 +1,14 @@
 ---
 title: JSONPath Support
-content_template: templates/concept
+content_type: concept
 weight: 25
 ---
 
-{{% capture overview %}}
+<!-- overview -->
 Kubectl supports JSONPath template.
-{{% /capture %}}
 
-{{% capture body %}}
+
+<!-- body -->
 
 JSONPath template is composed of JSONPath expressions enclosed by curly braces {}.
 Kubectl uses JSONPath expressions to filter on specific fields in the JSON object and format the output.
@@ -65,18 +65,18 @@ Given the JSON input:
 }
 ```
 
-Function          | Description               | Example                                                       | Result
-------------------|---------------------------|---------------------------------------------------------------|------------------
-text              | the plain text            | kind is {.kind}                                               | kind is List
-@                 | the current object        | {@}                                                           | the same as input
-. or []           | child operator            | {.kind} or {['kind']}                                         | List
-..                | recursive descent         | {..name}                                                      | 127.0.0.1 127.0.0.2 myself e2e
-\*                | wildcard. Get all objects | {.items[*].metadata.name}                                     | [127.0.0.1 127.0.0.2]
-[start:end :step] | subscript operator        | {.users[0].name}                                              | myself
-[,]               | union operator            | {.items[*]['metadata.name', 'status.capacity']}               | 127.0.0.1 127.0.0.2 map[cpu:4] map[cpu:8]
-?()               | filter                    | {.users[?(@.name=="e2e")].user.password}                      | secret
-range, end        | iterate list              | {range .items[*]}[{.metadata.name}, {.status.capacity}] {end} | [127.0.0.1, map[cpu:4]] [127.0.0.2, map[cpu:8]]
-''                | quote interpreted string  | {range .items[*]}{.metadata.name}{'\t'}{end}                  | 127.0.0.1    127.0.0.2
+Function            | Description               | Example                                                         | Result
+--------------------|---------------------------|-----------------------------------------------------------------|------------------
+`text`              | the plain text            | `kind is {.kind}`                                               | `kind is List`
+`@`                 | the current object        | `{@}`                                                           | the same as input
+`.` or `[]`         | child operator            | `{.kind}`, `{['kind']}` or `{['name\.type']}`                   | `List`
+`..`                | recursive descent         | `{..name}`                                                      | `127.0.0.1 127.0.0.2 myself e2e`
+`*`                 | wildcard. Get all objects | `{.items[*].metadata.name}`                                     | `[127.0.0.1 127.0.0.2]`
+`[start:end:step]` | subscript operator        | `{.users[0].name}`                                              | `myself`
+`[,]`               | union operator            | `{.items[*]['metadata.name', 'status.capacity']}`               | `127.0.0.1 127.0.0.2 map[cpu:4] map[cpu:8]`
+`?()`               | filter                    | `{.users[?(@.name=="e2e")].user.password}`                      | `secret`
+`range`, `end`      | iterate list              | `{range .items[*]}[{.metadata.name}, {.status.capacity}] {end}` | `[127.0.0.1, map[cpu:4]] [127.0.0.2, map[cpu:8]]`
+`''`                | quote interpreted string  | `{range .items[*]}{.metadata.name}{'\t'}{end}`                  | `127.0.0.1      127.0.0.2`
 
 Examples using `kubectl` and JSONPath expressions:
 
@@ -85,14 +85,29 @@ kubectl get pods -o json
 kubectl get pods -o=jsonpath='{@}'
 kubectl get pods -o=jsonpath='{.items[0]}'
 kubectl get pods -o=jsonpath='{.items[0].metadata.name}'
+kubectl get pods -o=jsonpath="{.items[*]['metadata.name', 'status.capacity']}"
 kubectl get pods -o=jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.startTime}{"\n"}{end}'
 ```
 
+{{< note >}}
 On Windows, you must _double_ quote any JSONPath template that contains spaces (not single quote as shown above for bash). This in turn means that you must use a single quote or escaped double quote around any literals in the template. For example:
 
 ```cmd
-C:\> kubectl get pods -o=jsonpath="{range .items[*]}{.metadata.name}{'\t'}{.status.startTime}{'\n'}{end}"
-C:\> kubectl get pods -o=jsonpath="{range .items[*]}{.metadata.name}{\"\t\"}{.status.startTime}{\"\n\"}{end}"
+kubectl get pods -o=jsonpath="{range .items[*]}{.metadata.name}{'\t'}{.status.startTime}{'\n'}{end}"
+kubectl get pods -o=jsonpath="{range .items[*]}{.metadata.name}{\"\t\"}{.status.startTime}{\"\n\"}{end}"
 ```
+{{< /note >}}
 
-{{% /capture %}}
+{{< note >}}
+
+JSONPath regular expressions are not supported. If you want to match using regular expressions, you can use a tool such as `jq`.
+
+```shell
+# kubectl does not support regular expressions for JSONpath output
+# The following command does not work
+kubectl get pods -o jsonpath='{.items[?(@.metadata.name=~/^test$/)].metadata.name}'
+
+# The following command achieves the desired result
+kubectl get pods -o json | jq -r '.items[] | select(.metadata.name | test("test-")).spec.containers[].image'
+```
+{{< /note >}}

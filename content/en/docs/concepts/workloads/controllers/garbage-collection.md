@@ -1,18 +1,16 @@
 ---
 title: Garbage Collection
-content_template: templates/concept
+content_type: concept
 weight: 60
 ---
 
-{{% capture overview %}}
+<!-- overview -->
 
 The role of the Kubernetes garbage collector is to delete certain objects
 that once had an owner, but no longer have an owner.
 
-{{% /capture %}}
 
-
-{{% capture body %}}
+<!-- body -->
 
 ## Owners and dependents
 
@@ -45,7 +43,7 @@ kubectl get pods --output=yaml
 
 The output shows that the Pod owner is a ReplicaSet named `my-repset`:
 
-```shell
+```yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -61,7 +59,7 @@ metadata:
 ```
 
 {{< note >}}
-Cross-namespace owner references is disallowed by design. This means: 
+Cross-namespace owner references are disallowed by design. This means:
 1) Namespace-scoped dependents can only specify owners in the same namespace,
 and owners that are cluster-scoped.
 2) Cluster-scoped dependents can only specify cluster-scoped owners, but not
@@ -93,7 +91,7 @@ collector deletes the object's dependents. Once the garbage collector has delete
 the owner object.
 
 Note that in the "foregroundDeletion", only dependents with
-`ownerReference.blockOwnerDeletion` block the deletion of the owner object.
+`ownerReference.blockOwnerDeletion=true` block the deletion of the owner object.
 Kubernetes version 1.7 added an [admission controller](/docs/reference/access-authn-authz/admission-controllers/#ownerreferencespermissionenforcement) that controls user access to set
 `blockOwnerDeletion` to true based on delete permissions on the owner object, so that
 unauthorized dependents cannot delay deletion of an owner object.
@@ -113,19 +111,13 @@ To control the cascading deletion policy, set the `propagationPolicy`
 field on the `deleteOptions` argument when deleting an Object. Possible values include "Orphan",
 "Foreground", or "Background".
 
-Prior to Kubernetes 1.9, the default garbage collection policy for many controller resources was `orphan`.
-This included ReplicationController, ReplicaSet, StatefulSet, DaemonSet, and
-Deployment. For kinds in the `extensions/v1beta1`, `apps/v1beta1`, and `apps/v1beta2` group versions, unless you 
-specify otherwise, dependent objects are orphaned by default. In Kubernetes 1.9, for all kinds in the `apps/v1` 
-group version, dependent objects are deleted by default.
-
 Here's an example that deletes dependents in background:
 
 ```shell
 kubectl proxy --port=8080
 curl -X DELETE localhost:8080/apis/apps/v1/namespaces/default/replicasets/my-repset \
--d '{"kind":"DeleteOptions","apiVersion":"v1","propagationPolicy":"Background"}' \
--H "Content-Type: application/json"
+  -d '{"kind":"DeleteOptions","apiVersion":"v1","propagationPolicy":"Background"}' \
+  -H "Content-Type: application/json"
 ```
 
 Here's an example that deletes dependents in foreground:
@@ -133,8 +125,8 @@ Here's an example that deletes dependents in foreground:
 ```shell
 kubectl proxy --port=8080
 curl -X DELETE localhost:8080/apis/apps/v1/namespaces/default/replicasets/my-repset \
--d '{"kind":"DeleteOptions","apiVersion":"v1","propagationPolicy":"Foreground"}' \
--H "Content-Type: application/json"
+  -d '{"kind":"DeleteOptions","apiVersion":"v1","propagationPolicy":"Foreground"}' \
+  -H "Content-Type: application/json"
 ```
 
 Here's an example that orphans dependents:
@@ -142,8 +134,8 @@ Here's an example that orphans dependents:
 ```shell
 kubectl proxy --port=8080
 curl -X DELETE localhost:8080/apis/apps/v1/namespaces/default/replicasets/my-repset \
--d '{"kind":"DeleteOptions","apiVersion":"v1","propagationPolicy":"Orphan"}' \
--H "Content-Type: application/json"
+  -d '{"kind":"DeleteOptions","apiVersion":"v1","propagationPolicy":"Orphan"}' \
+  -H "Content-Type: application/json"
 ```
 
 kubectl also supports cascading deletion.
@@ -168,16 +160,11 @@ See [kubeadm/#149](https://github.com/kubernetes/kubeadm/issues/149#issuecomment
 
 Tracked at [#26120](https://github.com/kubernetes/kubernetes/issues/26120)
 
-{{% /capture %}}
 
 
-{{% capture whatsnext %}}
+## {{% heading "whatsnext" %}}
+
 
 [Design Doc 1](https://git.k8s.io/community/contributors/design-proposals/api-machinery/garbage-collection.md)
 
 [Design Doc 2](https://git.k8s.io/community/contributors/design-proposals/api-machinery/synchronous-garbage-collection.md)
-
-{{% /capture %}}
-
-
-

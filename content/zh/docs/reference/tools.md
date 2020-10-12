@@ -1,26 +1,29 @@
+---
+reviewers:
+- janetkuo
+title: 工具
+content_type: concept
+---
+
 <!--
 ---
 reviewers:
 - janetkuo
 title: Tools
-content_template: templates/concept
+content_type: concept
 ---
 -->
----
-reviewers:
-- janetkuo
-title: 工具
-content_template: templates/concept
----
+
+
 
 <!--
 Kubernetes contains several built-in tools to help you work with the Kubernetes system.
 -->
-{{% capture overview %}}
+<!-- overview -->
 Kubernetes 包含一些内置工具，可以帮助用户更好的使用 Kubernetes 系统。
-{{% /capture %}}
 
-{{% capture body %}}
+
+<!-- body -->
 ## Kubectl
 
 <!--
@@ -28,21 +31,12 @@ Kubernetes 包含一些内置工具，可以帮助用户更好的使用 Kubernet
 -->
 [`kubectl`](/docs/tasks/tools/install-kubectl/) 是 Kubernetes 命令行工具，可以用来操控 Kubernetes 集群。
 
-## Kubeadm 
+## Kubeadm
 
 <!--
 [`kubeadm`](/docs/tasks/tools/install-kubeadm/) is the command line tool for easily provisioning a secure Kubernetes cluster on top of physical or cloud servers or virtual machines (currently in alpha).
 -->
 [`kubeadm`](/docs/tasks/tools/install-kubeadm/) 是一个命令行工具，可以用来在物理机、云服务器或虚拟机（目前处于 alpha 阶段）上轻松部署一个安全可靠的 Kubernetes 集群。
-
-## Kubefed
-
-<!--
-[`kubefed`](/docs/tasks/federation/set-up-cluster-federation-kubefed/) is the command line tool
-to help you administrate your federated clusters.
--->
-[`kubefed`](/docs/tasks/federation/set-up-cluster-federation-kubefed/) 是一个命令行工具，可以用来帮助用户管理联邦集群。
-
 
 ## Minikube
 
@@ -54,13 +48,13 @@ development and testing purposes.
 [`minikube`](/docs/tasks/tools/install-minikube/) 是一个可以方便用户在其工作站点本地部署一个单节点 Kubernetes 集群的工具，用于开发和测试。
 
 
-## Dashboard 
+## Dashboard
 
 <!--
 [`Dashboard`](/docs/tasks/access-application-cluster/web-ui-dashboard/), the web-based user interface of Kubernetes, allows you to deploy containerized applications
-to a Kubernetes cluster, troubleshoot them, and manage the cluster and its resources itself. 
+to a Kubernetes cluster, troubleshoot them, and manage the cluster and its resources itself.
 -->
-[`Dashboard`](/docs/tasks/access-application-cluster/web-ui-dashboard/), 是 Kubernetes 基于 Web 的用户管理界面，允许用户部署容器化应用到 Kubernetes 集群，进行故障排查以及管理集群和集群资源。 
+[`Dashboard`](/docs/tasks/access-application-cluster/web-ui-dashboard/), 是 Kubernetes 基于 Web 的用户管理界面，允许用户部署容器化应用到 Kubernetes 集群，进行故障排查以及管理集群和集群资源。
 
 ## Helm
 
@@ -106,4 +100,4 @@ Use Kompose to:
 * 将一个 Docker Compose 文件解释成 Kubernetes 对象
 * 将本地 Docker 开发 转变成通过 Kubernetes 来管理
 * 转换 v1 或 v2 Docker Compose `yaml` 文件 或 [分布式应用程序包](https://docs.docker.com/compose/bundles/)
-{{% /capture %}}
+

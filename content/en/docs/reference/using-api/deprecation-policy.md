@@ -4,15 +4,15 @@ reviewers:
 - lavalamp
 - thockin
 title: Kubernetes Deprecation Policy
-content_template: templates/concept
+content_type: concept
 weight: 40
 ---
 
-{{% capture overview %}}
+<!-- overview -->
 This document details the deprecation policy for various facets of the system.
-{{% /capture %}}
 
-{{% capture body %}}
+
+<!-- body -->
 Kubernetes is a large system with many components and many contributors.  As
 with any such software, the feature set naturally evolves over time, and
 sometimes a feature may need to be removed. This could include an API, a flag,
@@ -87,13 +87,13 @@ no less than:**
    * **Beta: 9 months or 3 releases (whichever is longer)**
    * **Alpha: 0 releases**
 
-This covers the [maximum supported version skew of 2 releases](/docs/setup/version-skew-policy/).
+This covers the [maximum supported version skew of 2 releases](/docs/setup/release/version-skew-policy/).
 
 {{< note >}}
 Until [#52185](https://github.com/kubernetes/kubernetes/issues/52185) is
-resolved, no API versions that have been persisted to storage may be removed. 
-Serving REST endpoints for those versions may be disabled (subject to the 
-deprecation timelines in this document), but the API server must remain capable 
+resolved, no API versions that have been persisted to storage may be removed.
+Serving REST endpoints for those versions may be disabled (subject to the
+deprecation timelines in this document), but the API server must remain capable
 of decoding/converting previously persisted data from storage.
 {{< /note >}}
 
@@ -289,14 +289,27 @@ API versions are supported in a series of subsequent releases.
 ### REST resources (aka API objects)
 
 Consider a hypothetical REST resource named Widget, which was present in API v1
-in the above timeline, and which needs to be deprecated.  We
-[document](/docs/reference/deprecation-policy/) and
+in the above timeline, and which needs to be deprecated.  We document and
 [announce](https://groups.google.com/forum/#!forum/kubernetes-announce) the
 deprecation in sync with release X+1.  The Widget resource still exists in API
 version v1 (deprecated) but not in v2alpha1.  The Widget resource continues to
 exist and function in releases up to and including X+8.  Only in release X+9,
 when API v1 has aged out, does the Widget resource cease to exist, and the
 behavior get removed.
+
+Starting in Kubernetes v1.19, making an API request to a deprecated REST API endpoint:
+
+1. Returns a `Warning` header (as defined in [RFC7234, Section 5.5](https://tools.ietf.org/html/rfc7234#section-5.5)) in the API response.
+2. Adds a `"k8s.io/deprecated":"true"` annotation to the [audit event](/docs/tasks/debug-application-cluster/audit/) recorded for the request.
+3. Sets an `apiserver_requested_deprecated_apis` gauge metric to `1` in the `kube-apiserver` 
+   process. The metric has labels for `group`, `version`, `resource`, `subresource` that can be joined
+   to the `apiserver_request_total` metric, and a `removed_release` label that indicates the
+   Kubernetes release in which the API will no longer be served. The following Prometheus query
+   returns information about requests made to deprecated APIs which will be removed in v1.22:
+
+   ```promql
+   apiserver_requested_deprecated_apis{removed_release="1.22"} * on(group,version,resource,subresource) group_right() apiserver_request_total
+   ```
 
 ### Fields of REST resources
 
@@ -365,54 +378,54 @@ This applies only to significant, user-visible behaviors which impact the
 correctness of applications running on Kubernetes or that impact the
 administration of Kubernetes clusters, and which are being removed entirely.
 
-An exception to the above rule is _feature gates_. Feature gates are key=value 
+An exception to the above rule is _feature gates_. Feature gates are key=value
 pairs that allow for users to enable/disable experimental features.
 
-Feature gates are intended to cover the development life cycle of a feature - they 
-are not intended to be long-term APIs. As such, they are expected to be deprecated 
-and removed after a feature becomes GA or is dropped. 
+Feature gates are intended to cover the development life cycle of a feature - they
+are not intended to be long-term APIs. As such, they are expected to be deprecated
+and removed after a feature becomes GA or is dropped.
 
-As a feature moves through the stages, the associated feature gate evolves. 
+As a feature moves through the stages, the associated feature gate evolves.
 The feature life cycle matched to its corresponding feature gate is:
 
   * Alpha: the feature gate is disabled by default and can be enabled by the user.
   * Beta: the feature gate is enabled by default and can be disabled by the user.
-  * GA: the feature gate is deprecated (see ["Deprecation"](#deprecation)) and becomes 
+  * GA: the feature gate is deprecated (see ["Deprecation"](#deprecation)) and becomes
   non-operational.
-  * GA, deprecation window complete: the feature gate is removed and calls to it are 
+  * GA, deprecation window complete: the feature gate is removed and calls to it are
   no longer accepted.
 
 ### Deprecation
 
-Features can be removed at any point in the life cycle prior to GA. When features are 
+Features can be removed at any point in the life cycle prior to GA. When features are
 removed prior to GA, their associated feature gates are also deprecated.
 
-When an invocation tries to disable a non-operational feature gate, the call fails in order 
+When an invocation tries to disable a non-operational feature gate, the call fails in order
 to avoid unsupported scenarios that might otherwise run silently.
 
-In some cases, removing pre-GA features requires considerable time. Feature gates can remain 
-operational until their associated feature is fully removed, at which point the feature gate 
-itself can be deprecated. 
+In some cases, removing pre-GA features requires considerable time. Feature gates can remain
+operational until their associated feature is fully removed, at which point the feature gate
+itself can be deprecated.
 
-When removing a feature gate for a GA feature also requires considerable time, calls to 
-feature gates may remain operational if the feature gate has no effect on the feature, 
+When removing a feature gate for a GA feature also requires considerable time, calls to
+feature gates may remain operational if the feature gate has no effect on the feature,
 and if the feature gate causes no errors.
 
-Features intended to be disabled by users should include a mechanism for disabling the 
+Features intended to be disabled by users should include a mechanism for disabling the
 feature in the associated feature gate.
 
 Versioning for feature gates is different from the previously discussed components,
 therefore the rules for deprecation are as follows:
 
-**Rule #8: Feature gates must be deprecated when the corresponding feature they control 
+**Rule #8: Feature gates must be deprecated when the corresponding feature they control
 transitions a lifecycle stage as follows. Feature gates must function for no less than:**
 
    * **Beta feature to GA: 6 months or 2 releases (whichever is longer)**
    * **Beta feature to EOL: 3 months or 1 release (whichever is longer)**
    * **Alpha feature to EOL: 0 releases**
 
-**Rule #9: Deprecated feature gates must respond with a warning when used. When a feature gate 
-is deprecated it must be documented in both in the release notes and the corresponding CLI help. 
+**Rule #9: Deprecated feature gates must respond with a warning when used. When a feature gate
+is deprecated it must be documented in both in the release notes and the corresponding CLI help.
 Both warnings and documentation must indicate whether a feature gate is non-operational.**
 
 ## Exceptions
@@ -425,4 +438,4 @@ leaders to find the best solutions for those specific cases, always bearing in
 mind that Kubernetes is committed to being a stable system that, as much as
 possible, never breaks users. Exceptions will always be announced in all
 relevant release notes.
-{{% /capture %}}
+

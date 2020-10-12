@@ -1,49 +1,57 @@
 ---
 title: Use a Service to Access an Application in a Cluster
-content_template: templates/tutorial
+content_type: tutorial
 weight: 60
 ---
 
-{{% capture overview %}}
+<!-- overview -->
 
 This page shows how to create a Kubernetes Service object that external
 clients can use to access an application running in a cluster. The Service
 provides load balancing for an application that has two running instances.
 
-{{% /capture %}}
 
 
-{{% capture prerequisites %}}
+
+## {{% heading "prerequisites" %}}
+
 
 {{< include "task-tutorial-prereqs.md" >}} {{< version-check >}}
 
-{{% /capture %}}
 
 
-{{% capture objectives %}}
+
+## {{% heading "objectives" %}}
+
 
 * Run two instances of a Hello World application.
 * Create a Service object that exposes a node port.
 * Use the Service object to access the running application.
 
-{{% /capture %}}
 
 
-{{% capture lessoncontent %}}
+
+<!-- lessoncontent -->
 
 ## Creating a service for an application running in two pods
 
+Here is the configuration file for the application Deployment:
+
+{{< codenew file="service/access/hello-application.yaml" >}}
+
 1. Run a Hello World application in your cluster:
+   Create the application Deployment using the file above:
    ```shell
-   kubectl run hello-world --replicas=2 --labels="run=load-balancer-example" --image=gcr.io/google-samples/node-hello:1.0  --port=8080
-   ```   
-    The preceding command creates a
-    [Deployment](/docs/concepts/workloads/controllers/deployment/)
-    object and an associated
-    [ReplicaSet](/docs/concepts/workloads/controllers/replicaset/)
-    object. The ReplicaSet has two
-    [Pods](/docs/concepts/workloads/pods/pod/),
-    each of which runs the Hello World application.
+   kubectl apply -f https://k8s.io/examples/service/access/hello-application.yaml
+   ```
+   The preceding command creates a
+   {{< glossary_tooltip text="Deployment" term_id="deployment" >}}
+   and an associated
+   {{< glossary_tooltip term_id="replica-set" text="ReplicaSet" >}}.
+   The ReplicaSet has two
+   {{< glossary_tooltip text="Pods" term_id="pod" >}}
+   each of which runs the Hello World application.
+
 
 1. Display information about the Deployment:
    ```shell
@@ -125,10 +133,11 @@ As an alternative to using `kubectl expose`, you can use a
 [service configuration file](/docs/concepts/services-networking/service/)
 to create a Service.
 
-{{% /capture %}}
 
 
-{{% capture cleanup %}}
+
+## {{% heading "cleanup" %}}
+
 
 To delete the Service, enter this command:
 
@@ -139,11 +148,12 @@ the Hello World application, enter this command:
 
     kubectl delete deployment hello-world
 
-{{% /capture %}}
 
 
-{{% capture whatsnext %}}
+
+## {{% heading "whatsnext" %}}
+
 
 Learn more about
 [connecting applications with services](/docs/concepts/services-networking/connect-applications-service/).
-{{% /capture %}}
+

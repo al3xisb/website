@@ -1,28 +1,27 @@
 ---
 title: Advertise Extended Resources for a Node
-content_template: templates/task
+content_type: task
 ---
 
 
-{{% capture overview %}}
+<!-- overview -->
 
 This page shows how to specify extended resources for a Node.
 Extended resources allow cluster administrators to advertise node-level
 resources that would otherwise be unknown to Kubernetes.
 
-{{< feature-state state="stable" >}}
-
-{{% /capture %}}
 
 
-{{% capture prerequisites %}}
+
+## {{% heading "prerequisites" %}}
+
 
 {{< include "task-tutorial-prereqs.md" >}} {{< version-check >}}
 
-{{% /capture %}}
 
 
-{{% capture steps %}}
+
+<!-- steps -->
 
 ## Get the names of your Nodes
 
@@ -60,7 +59,7 @@ you call dongles.
 
 Start a proxy, so that you can easily send requests to the Kubernetes API server:
 
-```
+```shell
 kubectl proxy
 ```
 
@@ -153,7 +152,7 @@ Then a Container could request any number of bytes of special storage, up to 800
 
 Here is a PATCH request that removes the dongle advertisement from a Node.
 
-```shell
+```
 PATCH /api/v1/nodes/<your-node-name>/status HTTP/1.1
 Accept: application/json
 Content-Type: application/json-patch+json
@@ -169,7 +168,7 @@ Host: k8s-master:8080
 
 Start a proxy, so that you can easily send requests to the Kubernetes API server:
 
-```
+```shell
 kubectl proxy
 ```
 
@@ -189,10 +188,13 @@ Verify that the dongle advertisement has been removed:
 kubectl describe node <your-node-name> | grep dongle
 ```
 
-{{% /capture %}}
+(you should not see any output)
 
 
-{{% capture whatsnext %}}
+
+
+## {{% heading "whatsnext" %}}
+
 
 ### For application developers
 
@@ -200,8 +202,8 @@ kubectl describe node <your-node-name> | grep dongle
 
 ### For cluster administrators
 
-* [Configure Minimum and Maximum Memory Constraints for a Namespace](/docs/tasks/administer-cluster/memory-constraint-namespace/)
-* [Configure Minimum and Maximum CPU Constraints for a Namespace](/docs/tasks/administer-cluster/cpu-constraint-namespace/)
+* [Configure Minimum and Maximum Memory Constraints for a Namespace](/docs/tasks/administer-cluster/manage-resources/memory-constraint-namespace/)
+* [Configure Minimum and Maximum CPU Constraints for a Namespace](/docs/tasks/administer-cluster/manage-resources/cpu-constraint-namespace/)
 
 
-{{% /capture %}}
+

@@ -1,68 +1,28 @@
 ---
 title: Advanced contributing
 slug: advanced
-content_template: templates/concept
-weight: 30
+content_type: concept
+weight: 98
 ---
 
-{{% capture overview %}}
+<!-- overview -->
 
-This page assumes that you've read and mastered the
-[Start contributing](/docs/contribute/start/) and
-[Intermediate contributing](/docs/contribute/intermediate/) topics and are ready
+This page assumes that you understand how to
+[contribute to new content](/docs/contribute/new-content/overview) and
+[review others' work](/docs/contribute/review/reviewing-prs/), and are ready
 to learn about more ways to contribute. You need to use the Git command line
 client and other tools for some of these tasks.
 
-{{% /capture %}}
-
-{{% capture body %}}
-
-## Be the PR Wrangler for a week
-
-SIG Docs [approvers](/docs/contribute/participating/#approvers) can be PR
-wranglers.
-
-SIG Docs approvers are added to the
-[PR Wrangler rotation scheduler](https://github.com/kubernetes/website/wiki/PR-Wranglers)
-for weekly rotations. The PR wrangler's duties include:
-
-- Review incoming pull requests daily.
-  - Help new contributors sign the CLA, and close any PR where the CLA hasn't
-    been signed for two weeks. PR authors can reopen the PR after signing the
-    CLA, so this is a low-risk way to make sure nothing gets merged without a
-    signed CLA.
-  - Provide feedback on proposed changes, including helping facilitate technical
-    review from members of other SIGs.
-  - Merge PRs when they are ready, or close PRs that shouldn't be accepted.
-- Triage and tag incoming issues daily. See
-  [Intermediate contributing](/docs/contribute/intermediate/) for guidelines
-  about how SIG Docs uses metadata.
-
-### Helpful Github queries for wranglers
-
-The following queries are helpful when wrangling. After working through these three queries, the remaining list of PRs to be
-reviewed is usually small. These queries specifically exclude localization PRs, and only include the `master` branch (except for the last one).
-
-- [No CLA, not eligible to merge](https://github.com/kubernetes/website/pulls?q=is%3Aopen+is%3Apr+label%3A%22cncf-cla%3A+no%22+-label%3Ado-not-merge+label%3Alanguage%2Fen):
-  Remind the contributor to sign the CLA. If they've already been reminded by both the bot and a human, close
-  the PR and remind them that they can open it after signing the CLA.
-  **We can't even review PRs whose authors have not signed the CLA!**
-- [Needs LGTM](https://github.com/kubernetes/website/pulls?utf8=%E2%9C%93&q=is%3Aopen+is%3Apr+-label%3Ado-not-merge+label%3Alanguage%2Fen+-label%3Algtm+):
-  If it needs technical review, loop in one of the reviewers suggested by the bot. If it needs docs review
-  or copy-editing, either suggest changes or add a copyedit commit to the PR to move it along.
-- [Has LGTM, needs docs approval](https://github.com/kubernetes/website/pulls?q=is%3Aopen+is%3Apr+-label%3Ado-not-merge+label%3Alanguage%2Fen+label%3Algtm):
-  See if you can figure out what needs to happen for the PR to be merged.
-- [Not against master](https://github.com/kubernetes/website/pulls?utf8=%E2%9C%93&q=is%3Aopen+is%3Apr+-label%3Ado-not-merge+label%3Alanguage%2Fen+-base%3Amaster): If it's against a `dev-` branch, it's for an upcoming release.
-  Make sure the [release meister](https://github.com/kubernetes/sig-release/tree/master/release-team) knows about it.
-  If it's against an old branch, help the PR author figure out whether it's targeted against the best branch.
+<!-- body -->
 
 ## Propose improvements
 
-SIG Docs
-[members](/docs/contribute/participating/#members) can propose improvements.
+SIG Docs [members](/docs/contribute/participate/roles-and-responsibilities/#members)
+can propose improvements.
 
 After you've been contributing to the Kubernetes documentation for a while, you
-may have ideas for improvement to the style guide, the toolchain used to build
+may have ideas for improving the [Style Guide](/docs/contribute/style/style-guide/)
+, the [Content Guide](/docs/contribute/style/content-guide/), the toolchain used to build
 the documentation, the website style, the processes for reviewing and merging
 pull requests, or other aspects of the documentation. For maximum transparency,
 these types of proposals need to be discussed in a SIG Docs meeting or on the
@@ -81,13 +41,13 @@ documentation testing might involve working with sig-testing.
 
 ## Coordinate docs for a Kubernetes release
 
-SIG Docs [approvers](/docs/contribute/participating/#approvers) can coordinate
-docs for a Kubernetes release.
+SIG Docs [approvers](/docs/contribute/participate/roles-and-responsibilities/#approvers)
+can coordinate docs for a Kubernetes release.
 
 Each Kubernetes release is coordinated by a team of people participating in the
 sig-release Special Interest Group (SIG). Others on the release team for a given
-release include an overall release lead, as well as representatives from sig-pm,
-sig-testing, and others. To find out more about Kubernetes release processes,
+release include an overall release lead, as well as representatives from
+sig-testing and others. To find out more about Kubernetes release processes,
 refer to
 [https://github.com/kubernetes/sig-release](https://github.com/kubernetes/sig-release).
 
@@ -110,16 +70,35 @@ The SIG Docs representative for a given release coordinates the following tasks:
 Coordinating a release is typically a 3-4 month commitment, and the duty is
 rotated among SIG Docs approvers.
 
+## Serve as a New Contributor Ambassador
+
+SIG Docs [approvers](/docs/contribute/participate/roles-and-responsibilities/#approvers)
+can serve as New Contributor Ambassadors.
+
+New Contributor Ambassadors welcome new contributors to SIG-Docs,
+suggest PRs to new contributors, and mentor new contributors through their first
+few PR submissions.
+
+Responsibilities for New Contributor Ambassadors include:
+
+- Monitoring the [#sig-docs Slack channel](https://kubernetes.slack.com) for questions from new contributors.
+- Working with PR wranglers to identify good first issues for new contributors.
+- Mentoring new contributors through their first few PRs to the docs repo.
+- Helping new contributors create the more complex PRs they need to become Kubernetes members.
+- [Sponsoring contributors](/docs/contribute/advanced/#sponsor-a-new-contributor) on their path to becoming Kubernetes members.
+
+Current New Contributor Ambassadors are announced at each SIG-Docs meeting, and in the [Kubernetes #sig-docs channel](https://kubernetes.slack.com).
+
 ## Sponsor a new contributor
 
-SIG Docs [reviewers](/docs/contribute/participating/#reviewers) can sponsor
-new contributors.
+SIG Docs [reviewers](/docs/contribute/participate/roles-and-responsibilities/#reviewers)
+can sponsor new contributors.
 
 After a new contributor has successfully submitted 5 substantive pull requests
 to one or more Kubernetes repositories, they are eligible to apply for
-[membership](/docs/contribute/participating#members) in the Kubernetes
-organization. The contributor's membership needs to be backed by two sponsors
-who are already reviewers.
+[membership](/docs/contribute/participate/roles-and-responsibilities/#members)
+in the Kubernetes organization. The contributor's membership needs to be
+backed by two sponsors who are already reviewers.
 
 New docs contributors can request sponsors by asking in the #sig-docs channel
 on the [Kubernetes Slack instance](https://kubernetes.slack.com) or on the
@@ -129,5 +108,84 @@ When they submit their membership application, reply to the application with a
 "+1" and include details about why you think the applicant is a good fit for
 membership in the Kubernetes organization.
 
-{{% /capture %}}
+## Serve as a SIG Co-chair
 
+SIG Docs [approvers](/docs/contribute/participate/roles-and-responsibilities/#approvers)
+can serve a term as a co-chair of SIG Docs.
+
+### Prerequisites
+
+Approvers must meet the following requirements to be a co-chair:
+
+- Have been a SIG Docs approver for at least 6 months
+- Have [led a Kubernetes docs release](/docs/contribute/advanced/#coordinate-docs-for-a-kubernetes-release) or shadowed two releases
+- Understand SIG Docs workflows and tooling: git, Hugo, localization, blog subproject
+- Understand how other Kubernetes SIGs and repositories affect the SIG Docs
+  workflow, including:
+  [teams in k/org](https://github.com/kubernetes/org/blob/master/config/kubernetes/sig-docs/teams.yaml),
+  [process in k/community](https://github.com/kubernetes/community/tree/master/sig-docs),
+  plugins in [k/test-infra](https://github.com/kubernetes/test-infra/), and the role of
+  [SIG Architecture](https://github.com/kubernetes/community/tree/master/sig-architecture).
+- Commit at least 5 hours per week (and often more) to the role for a minimum of 6 months
+
+### Responsibilities
+
+The role of co-chair is one of service: co-chairs build contributor capacity, handle process and policy, schedule and run meetings, schedule PR wranglers, advocate for docs in the Kubernetes community, make sure that docs succeed in Kubernetes release cycles, and keep SIG Docs focused on effective priorities.
+
+Responsibilities include:
+
+- Keep SIG Docs focused on maximizing developer happiness through excellent documentation
+- Exemplify the [community code of conduct](https://github.com/cncf/foundation/blob/master/code-of-conduct.md) and hold SIG members accountable to it
+- Learn and set best practices for the SIG by updating contribution guidelines
+- Schedule and run SIG meetings: weekly status updates, quarterly retro/planning sessions, and others as needed
+- Schedule and run doc sprints at KubeCon events and other conferences
+- Recruit for and advocate on behalf of SIG Docs with the {{< glossary_tooltip text="CNCF" term_id="cncf" >}} and its platinum partners, including Google, Oracle, Azure, IBM, and Huawei
+- Keep the SIG running smoothly
+
+### Running effective meetings
+
+To schedule and run effective meetings, these guidelines show what to do, how to do it, and why.
+
+**Uphold the [community code of conduct](https://github.com/cncf/foundation/blob/master/code-of-conduct.md)**:
+
+- Hold respectful, inclusive discussions with respectful, inclusive language.
+
+**Set a clear agenda**:
+
+- Set a clear agenda of topics
+- Publish the agenda in advance
+
+For weekly meetings, copypaste the previous week's notes into the "Past meetings" section of the notes
+
+**Collaborate on accurate notes**:
+
+- Record the meeting's discussion
+- Consider delegating the role of note-taker
+
+**Assign action items clearly and accurately**:
+
+- Record the action item, who is assigned to it, and the expected completion date
+
+**Moderate as needed**:
+
+- If discussion strays from the agenda, refocus participants on the current topic
+- Make room for different discussion styles while keeping the discussion focused and honoring folks' time
+
+**Honor folks' time**:
+
+Begin and end meetings on time.
+
+**Use Zoom effectively**:
+
+- Familiarize yourself with [Zoom guidelines for Kubernetes](https://github.com/kubernetes/community/blob/master/communication/zoom-guidelines.md)
+- Claim the host role when you log in by entering the host key
+
+<img src="/images/docs/contribute/claim-host.png" width="75%" alt="Claiming the host role in Zoom" />
+
+### Recording meetings on Zoom
+
+When you're ready to start the recording, click Record to Cloud.
+
+When you're ready to stop recording, click Stop.
+
+The video uploads automatically to YouTube.

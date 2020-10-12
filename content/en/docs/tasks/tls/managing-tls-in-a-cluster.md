@@ -1,48 +1,52 @@
 ---
 title: Manage TLS Certificates in a Cluster
-content_template: templates/task
+content_type: task
 reviewers:
 - mikedanese
 - beacham
 - liggit
 ---
 
-{{% capture overview %}}
+<!-- overview -->
 
-Every Kubernetes cluster has a cluster root Certificate Authority (CA). The CA
-is generally used by cluster components to validate the API server's
-certificate, by the API server to validate kubelet client certificates, etc. To
-support this, the CA certificate bundle is distributed to every node in the
-cluster and is distributed as a secret attached to default service accounts.
-Optionally, your workloads can use this CA to establish trust. Your application
-can request a certificate signing using the `certificates.k8s.io` API using a
-protocol that is similar to the
-[ACME draft](https://github.com/ietf-wg-acme/acme/).
+Kubernetes provides a `certificates.k8s.io` API, which lets you provision TLS
+certificates signed by a Certificate Authority (CA) that you control. These CA
+and certificates can be used by your workloads to establish trust.
 
-{{% /capture %}}
+`certificates.k8s.io` API uses a protocol that is similar to the [ACME
+draft](https://github.com/ietf-wg-acme/acme/).
+
+{{< note >}}
+Certificates created using the `certificates.k8s.io` API are signed by a
+dedicated CA. It is possible to configure your cluster to use the cluster root
+CA for this purpose, but you should never rely on this. Do not assume that
+these certificates will validate against the cluster root CA.
+{{< /note >}}
 
 
-{{% capture prerequisites %}}
+
+
+## {{% heading "prerequisites" %}}
+
 
 {{< include "task-tutorial-prereqs.md" >}} {{< version-check >}}
 
-{{% /capture %}}
 
-{{% capture steps %}}
+
+<!-- steps -->
 
 ## Trusting TLS in a Cluster
 
-Trusting the cluster root CA from an application running as a pod usually
-requires some extra application configuration. You will need to add the CA
-certificate bundle to the list of CA certificates that the TLS client or server
-trusts. For example, you would do this with a golang TLS config by parsing the
-certificate chain and adding the parsed certificates to the `RootCAs` field
-in the [`tls.Config`](https://godoc.org/crypto/tls#Config) struct.
+Trusting the custom CA from an application running as a pod usually requires
+some extra application configuration. You will need to add the CA certificate
+bundle to the list of CA certificates that the TLS client or server trusts. For
+example, you would do this with a golang TLS config by parsing the certificate
+chain and adding the parsed certificates to the `RootCAs` field in the
+[`tls.Config`](https://godoc.org/crypto/tls#Config) struct.
 
-The CA certificate bundle is automatically mounted into pods using the default
-service account at the path `/var/run/secrets/kubernetes.io/serviceaccount/ca.crt`.
-If you are not using the default service account, ask a cluster administrator to
-build a configmap containing the certificate bundle that you have access to use.
+You can distribute the CA certificate as a
+[ConfigMap](/docs/tasks/configure-pod-container/configure-pod-configmap) that your
+pods have access to use.
 
 ## Requesting a Certificate
 
@@ -69,7 +73,7 @@ cat <<EOF | cfssl genkey - | cfssljson -bare server
   "hosts": [
     "my-svc.my-namespace.svc.cluster.local",
     "my-pod.my-namespace.pod.cluster.local",
-    "172.168.0.24",
+    "192.0.2.24",
     "10.0.34.2"
   ],
   "CN": "my-pod.my-namespace.pod.cluster.local",
@@ -81,7 +85,7 @@ cat <<EOF | cfssl genkey - | cfssljson -bare server
 EOF
 ```
 
-Where `172.168.0.24` is the service's cluster IP,
+Where `192.0.2.24` is the service's cluster IP,
 `my-svc.my-namespace.svc.cluster.local` is the service's DNS name,
 `10.0.34.2` is the pod's IP and `my-pod.my-namespace.pod.cluster.local`
 is the pod's DNS name. You should see the following output:
@@ -105,14 +109,13 @@ command:
 
 ```shell
 cat <<EOF | kubectl apply -f -
-apiVersion: certificates.k8s.io/v1beta1
+apiVersion: certificates.k8s.io/v1
 kind: CertificateSigningRequest
 metadata:
   name: my-svc.my-namespace
 spec:
-  groups:
-  - system:authenticated
   request: $(cat server.csr | base64 | tr -d '\n')
+  signerName: kubernetes.io/kubelet-serving
   usages:
   - digital signature
   - key encipherment
@@ -123,10 +126,10 @@ EOF
 Notice that the `server.csr` file created in step 1 is base64 encoded
 and stashed in the `.spec.request` field. We are also requesting a
 certificate with the "digital signature", "key encipherment", and "server
-auth" key usages. We support all key usages and extended key usages listed
-[here](https://godoc.org/k8s.io/api/certificates/v1beta1#KeyUsage)
-so you can request client certificates and other certificates using this
-same API.
+auth" key usages, signed by the `kubernetes.io/kubelet-serving` signer.
+A specific `signerName` must be requested.
+View documentation for [supported signer names](/docs/reference/access-authn-authz/certificate-signing-requests/#signers)
+for more information.
 
 The CSR should now be visible from the API in a Pending state. You can see
 it by running:
@@ -147,7 +150,7 @@ Subject:
         Serial Number:
 Subject Alternative Names:
         DNS Names:      my-svc.my-namespace.svc.cluster.local
-        IP Addresses:   172.168.0.24
+        IP Addresses:   192.0.2.24
                         10.0.34.2
 Events: <none>
 ```
@@ -207,13 +210,11 @@ the CSR and otherwise should deny the CSR.
 
 ## A Word of Warning on the Approval Permission
 
-The ability to approve CSRs decides who trusts who within the cluster. This
-includes who the Kubernetes API trusts. The ability to approve CSRs should
-not be granted broadly or lightly. The requirements of the challenge
-noted in the previous section and the repercussions of issuing a specific
-certificate should be fully understood before granting this permission. See
-[here](/docs/reference/access-authn-authz/authentication/#x509-client-certs) for information on how
-certificates interact with authentication.
+The ability to approve CSRs decides who trusts whom within your environment. The
+ability to approve CSRs should not be granted broadly or lightly. The
+requirements of the challenge noted in the previous section and the
+repercussions of issuing a specific certificate should be fully understood
+before granting this permission.
 
 ## A Note to Cluster Administrators
 
@@ -223,4 +224,4 @@ enable it, pass the `--cluster-signing-cert-file` and
 `--cluster-signing-key-file` parameters to the controller manager with paths to
 your Certificate Authority's keypair.
 
-{{% /capture %}}
+

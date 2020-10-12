@@ -1,15 +1,15 @@
 ---
 title: Annotations
-content_template: templates/concept
+content_type: concept
 weight: 50
 ---
 
-{{% capture overview %}}
+<!-- overview -->
 You can use Kubernetes annotations to attach arbitrary non-identifying metadata
 to objects. Clients such as tools and libraries can retrieve this metadata.
-{{% /capture %}}
 
-{{% capture body %}}
+
+<!-- body -->
 ## Attaching metadata to objects
 
 You can use either labels or annotations to attach metadata to Kubernetes
@@ -69,10 +69,30 @@ If the prefix is omitted, the annotation Key is presumed to be private to the us
 
 The `kubernetes.io/` and `k8s.io/` prefixes are reserved for Kubernetes core components.
 
-{{% /capture %}}
+For example, here's the configuration file for a Pod that has the annotation `imageregistry: https://hub.docker.com/` :
 
-{{% capture whatsnext %}}
+```yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: annotations-demo
+  annotations:
+    imageregistry: "https://hub.docker.com/"
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.14.2
+    ports:
+    - containerPort: 80
+
+```
+
+
+
+## {{% heading "whatsnext" %}}
+
 Learn more about [Labels and Selectors](/docs/concepts/overview/working-with-objects/labels/).
-{{% /capture %}}
+
 
 

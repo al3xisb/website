@@ -1,52 +1,68 @@
 aliases:
-  sig-cluster-lifecycle-kubeadm-approvers: # Approving changes to kubeadm documentation
-    - timothysc
-    - lukemarsden
-    - luxas
-    - roberthbailey
-    - fabriziopandini
-  sig-cluster-lifecycle-kubeadm-reviewers: # Reviewing kubeadm documentation
-    - timothysc
-    - lukemarsden
-    - luxas
-    - roberthbailey
-    - fabriziopandini
-    - kad
-    - xiangpengzhao
-    - stealthybox
-    - liztio
-    - chuckha
-    - detiber
-    - dixudx
-  sig-docs-en-owners: # Admins for English content
-    - bradamant3
-    - bradtopol
-    - chenopis
+  sig-docs-blog-owners: # Approvers for blog content
+    - castrojo
+    - kbarnard10
+    - onlydole
+    - zacharysarah
+    - mrbobbytables
+  sig-docs-blog-reviewers: # Reviewers for blog content
+    - castrojo
     - cody-clark
-    - jaredbhatti
+    - kbarnard10
+    - mrbobbytables
+    - onlydole
+    - parispittman
+    - vonguard
+  sig-docs-de-owners: # Admins for German content
+    - bene2k1
+    - mkorbi
+    - rlenferink
+  sig-docs-de-reviews: # PR reviews for German content
+    - bene2k1
+    - mkorbi
+    - rlenferink
+  sig-docs-en-owners: # Admins for English content
+    - annajung
+    - bradtopol
+    - celestehorgan
+    - irvifa
     - jimangel
     - kbarnard10
-    - mistyhacks
-    - rajakavitha1
-    - ryanmcginnis
+    - kbhawkey
+    - onlydole
+    - savitharaghunathan
+    - sftim
     - steveperry-53
-    - stewart-yu
     - tengqm
-    - tfogo
+    - xiangpengzhao
     - zacharysarah
-    - zhangxiaoyu-zidif
     - zparnold
   sig-docs-en-reviews: # PR reviews for English content
+    - bradtopol
+    - celestehorgan
+    - daminisatya
     - jimangel
-    - rajakavitha1
-    - stewart-yu
+    - kbarnard10
+    - kbhawkey
+    - onlydole
+    - rajeshdeshpande02
+    - sftim
+    - steveperry-53
+    - tengqm
     - xiangpengzhao
-    - zhangxiaoyu-zidif
+    - zparnold
+  sig-docs-es-owners: # Admins for Spanish content
+    - raelga
+    - alexbrand
+  sig-docs-es-reviews: # PR reviews for Spanish content
+    - raelga
+    - alexbrand
+    # glo-pena
+    - electrocucaracha
   sig-docs-fr-owners: # Admins for French content
-    - sieben
+    - remyleone
     - perriea
     - rekcah78
-    - lledru
     - yastij
     - smana
     - rbenzair
@@ -55,11 +71,12 @@ aliases:
     - jygastaud
     - awkif
     - oussemos
+    - anthonydahanne
+    - feloy
   sig-docs-fr-reviews: # PR reviews for French content
-    - sieben
+    - remyleone
     - perriea
     - rekcah78
-    - lledru
     - yastij
     - smana
     - rbenzair
@@ -68,70 +85,135 @@ aliases:
     - jygastaud
     - awkif
     - oussemos
+    - anthonydahanne
+    - feloy
+  sig-docs-hi-owners: # Admins for Hindi content
+    - avidLearnerInProgress
+    - daminisatya
+    - mittalyashu
+  sig-docs-hi-reviews: # PR reviews for Hindi content
+    - avidLearnerInProgress
+    - daminisatya
+    - mittalyashu
+  sig-docs-id-owners: # Admins for Indonesian content
+    - girikuncoro
+    - irvifa
+  sig-docs-id-reviews: # PR reviews for Indonesian content
+    - girikuncoro
+    - irvifa
+    - wahyuoi
+    - phanama
+    - danninov
   sig-docs-it-owners: # Admins for Italian content
-    - rlenferink
-    - lledru
+    - fabriziopandini
+    - Fale
+    - mattiaperi
     - micheleberardi
   sig-docs-it-reviews: # PR reviews for Italian content
-    - rlenferink
-    - lledru
+    - fabriziopandini
+    - Fale
+    - mattiaperi
     - micheleberardi
-  sig-docs-ja-owners: # Admins for Japanese content 
-    - cstoku
+  sig-docs-ja-owners: # Admins for Japanese content
+    # cstoku
+    - inductor
     - nasa9084
-    - tnir
-    - zacharysarah
-  sig-docs-ja-reviews: # PR reviews for Italian content 
-    - cstoku
+  sig-docs-ja-reviews: # PR reviews for Japanese content
+    - bells17
+    # cstoku
+    - inductor
     - makocchi-git
-    - MasayaAoyama
+    # MasayaAoyama
     - nasa9084
-    - tnir
+    - oke-py
   sig-docs-ko-owners: # Admins for Korean content
     - ClaudiaJKang
     - gochist
     - ianychoi
-    - zacharysarah
+    - seokho-son
+    - ysyukr
   sig-docs-ko-reviews: # PR reviews for Korean content
     - ClaudiaJKang
     - gochist
     - ianychoi
-  sig-docs-maintainers: # Website maintainers
-    - bradamant3
-    - chenopis
-    - jaredbhatti
+    - seokho-son
+    - ysyukr
+    - pjhwa
+  sig-docs-leads: # Website chairs and tech leads
+    - irvifa
     - jimangel
     - kbarnard10
-    - mistyhacks
-    - pwittrock
-    - steveperry-53
-    - tengqm
-    - zacharysarah
-    - zparnold
+    - kbhawkey
+    - onlydole
+    - sftim
   sig-docs-zh-owners: # Admins for Chinese content
-    - bradtopol
-    - chenopis
+    # chenopis
     - chenrui333
-    - dchen1107
-    - haibinxie
-    - hanjiayao
-    - lichuqiang
-    - lucperkins
-    - markthink
+    # dchen1107
+    # haibinxie
+    # hanjiayao
+    # lichuqiang
     - SataQiu
+    - tanjunchen
     - tengqm
     - xiangpengzhao
     - xichengliudui
-    - zacharysarah
-    - zhangxiaoyu-zidif
+    # zhangxiaoyu-zidif
   sig-docs-zh-reviews: # PR reviews for Chinese content
     - chenrui333
+    - howieyuen
     - idealhack
-    - markthink
+    - pigletfly
     - SataQiu
+    - tanjunchen
     - tengqm
     - xiangpengzhao
     - xichengliudui
-    - zhangxiaoyu-zidif
-    - pigletfly
-  
+    # zhangxiaoyu-zidif
+  sig-docs-pt-owners: # Admins for Portuguese content
+    - femrtnz
+    - jcjesus
+    - devlware
+    - jhonmike
+  sig-docs-pt-reviews: # PR reviews for Portugese content
+    - femrtnz
+    - jcjesus
+    - devlware
+    - jhonmike
+  sig-docs-vi-owners: # Admins for Vietnamese content
+    - huynguyennovem
+    - ngtuna
+    - truongnh1992
+  sig-docs-vi-reviews: # PR reviews for Vietnamese content
+    - huynguyennovem
+    - ngtuna
+    - truongnh1992
+  sig-docs-ru-owners: # Admins for Russian content
+    - msheldyakov
+    - aisonaku
+    - potapy4
+    - dianaabv
+  sig-docs-ru-reviews: # PR reviews for Russian content
+    - Arhell
+    - msheldyakov
+    - aisonaku
+    - potapy4
+    - dianaabv
+  sig-docs-pl-owners: # Admins for Polish content
+    - mfilocha
+    - nvtkaszpir
+  sig-docs-pl-reviews: # PR reviews for Polish content
+    - mfilocha
+    - nvtkaszpir
+    - kpucynski
+  sig-docs-uk-owners: # Admins for Ukrainian content
+    - anastyakulyk
+    - butuzov
+    - MaxymVlasov
+  sig-docs-uk-reviews: # PR reviews for Ukrainian content
+    - anastyakulyk
+    - Arhell
+    - butuzov
+    - idvoretskyi
+    - MaxymVlasov
+    - Potapy4

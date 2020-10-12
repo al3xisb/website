@@ -5,13 +5,13 @@ reviewers:
 - verb
 - yujuhong
 - dchen1107
-content_template: templates/task
+content_type: task
 weight: 160
 ---
 
-{{% capture overview %}}
+<!-- overview -->
 
-{{< feature-state state="beta" >}}
+{{< feature-state state="stable" for_k8s_version="v1.17" >}}
 
 This page shows how to configure process namespace sharing for a pod. When
 process namespace sharing is enabled, processes in a container are visible
@@ -21,78 +21,82 @@ You can use this feature to configure cooperating containers, such as a log
 handler sidecar container, or to troubleshoot container images that don't
 include debugging utilities like a shell.
 
-{{% /capture %}}
 
-{{% capture prerequisites %}}
+
+## {{% heading "prerequisites" %}}
+
 
 {{< include "task-tutorial-prereqs.md" >}} {{< version-check >}}
 
-Process Namespace Sharing is a **beta** feature that is enabled by default. It
-may be disabled by setting `--feature-gates=PodShareProcessNamespace=false`.
 
-{{% /capture %}}
 
-{{% capture steps %}}
+<!-- steps -->
 
 ## Configure a Pod
 
-Process Namespace Sharing is enabled using the `ShareProcessNamespace` field of
+Process Namespace Sharing is enabled using the `shareProcessNamespace` field of
 `v1.PodSpec`. For example:
 
 {{< codenew file="pods/share-process-namespace.yaml" >}}
 
 1. Create the pod `nginx` on your cluster:
 
-        kubectl apply -f https://k8s.io/examples/pods/share-process-namespace.yaml
+    ```shell
+    kubectl apply -f https://k8s.io/examples/pods/share-process-namespace.yaml
+    ```
 
 1. Attach to the `shell` container and run `ps`:
 
-        ```
-        kubectl attach -it nginx -c shell
-        ```
+    ```shell
+    kubectl attach -it nginx -c shell
+    ```
 
-        If you don't see a command prompt, try pressing enter.
+    If you don't see a command prompt, try pressing enter.
 
-        ```
-        / # ps ax
-        PID   USER     TIME  COMMAND
-            1 root      0:00 /pause
-            8 root      0:00 nginx: master process nginx -g daemon off;
-           14 101       0:00 nginx: worker process
-           15 root      0:00 sh
-           21 root      0:00 ps ax
-        ```
+    ```
+    / # ps ax
+    PID   USER     TIME  COMMAND
+        1 root      0:00 /pause
+        8 root      0:00 nginx: master process nginx -g daemon off;
+       14 101       0:00 nginx: worker process
+       15 root      0:00 sh
+       21 root      0:00 ps ax
+    ```
 
 You can signal processes in other containers. For example, send `SIGHUP` to
 nginx to restart the worker process. This requires the `SYS_PTRACE` capability.
 
-        / # kill -HUP 8
-        / # ps ax
-        PID   USER     TIME  COMMAND
-            1 root      0:00 /pause
-            8 root      0:00 nginx: master process nginx -g daemon off;
-           15 root      0:00 sh
-           22 101       0:00 nginx: worker process
-           23 root      0:00 ps ax
+```
+/ # kill -HUP 8
+/ # ps ax
+PID   USER     TIME  COMMAND
+    1 root      0:00 /pause
+    8 root      0:00 nginx: master process nginx -g daemon off;
+   15 root      0:00 sh
+   22 101       0:00 nginx: worker process
+   23 root      0:00 ps ax
+```
 
 It's even possible to access another container image using the
 `/proc/$pid/root` link.
 
-        / # head /proc/8/root/etc/nginx/nginx.conf
+```
+/ # head /proc/8/root/etc/nginx/nginx.conf
 
-        user  nginx;
-        worker_processes  1;
+user  nginx;
+worker_processes  1;
 
-        error_log  /var/log/nginx/error.log warn;
-        pid        /var/run/nginx.pid;
+error_log  /var/log/nginx/error.log warn;
+pid        /var/run/nginx.pid;
 
 
-        events {
-            worker_connections  1024;
+events {
+    worker_connections  1024;
+```
 
-{{% /capture %}}
 
-{{% capture discussion %}}
+
+<!-- discussion -->
 
 ## Understanding Process Namespace Sharing
 
@@ -114,6 +118,6 @@ containers, though, so it's important to understand these differences:
    `/proc/$pid/root` link.** This makes debugging easier, but it also means
    that filesystem secrets are protected only by filesystem permissions.
 
-{{% /capture %}}
+
 
 

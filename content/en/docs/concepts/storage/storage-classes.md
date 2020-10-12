@@ -5,23 +5,21 @@ reviewers:
 - thockin
 - msau42
 title: Storage Classes
-content_template: templates/concept
+content_type: concept
 weight: 30
 ---
 
-{{% capture overview %}}
+<!-- overview -->
 
 This document describes the concept of a StorageClass in Kubernetes. Familiarity
 with [volumes](/docs/concepts/storage/volumes/) and
 [persistent volumes](/docs/concepts/storage/persistent-volumes) is suggested.
 
-{{% /capture %}}
-
-{{% capture body %}}
+<!-- body -->
 
 ## Introduction
 
-A `StorageClass` provides a way for administrators to describe the "classes" of
+A StorageClass provides a way for administrators to describe the "classes" of
 storage they offer. Different classes might map to quality-of-service levels,
 or to backup policies, or to arbitrary policies determined by the cluster
 administrators. Kubernetes itself is unopinionated about what classes
@@ -30,29 +28,30 @@ systems.
 
 ## The StorageClass Resource
 
-Each `StorageClass` contains the fields `provisioner`, `parameters`, and
-`reclaimPolicy`, which are used when a `PersistentVolume` belonging to the
+Each StorageClass contains the fields `provisioner`, `parameters`, and
+`reclaimPolicy`, which are used when a PersistentVolume belonging to the
 class needs to be dynamically provisioned.
 
-The name of a `StorageClass` object is significant, and is how users can
+The name of a StorageClass object is significant, and is how users can
 request a particular class. Administrators set the name and other parameters
-of a class when first creating `StorageClass` objects, and the objects cannot
+of a class when first creating StorageClass objects, and the objects cannot
 be updated once they are created.
 
-Administrators can specify a default `StorageClass` just for PVCs that don't
+Administrators can specify a default StorageClass just for PVCs that don't
 request any particular class to bind to: see the
-[`PersistentVolumeClaim` section](/docs/concepts/storage/persistent-volumes/#class-1)
+[PersistentVolumeClaim section](/docs/concepts/storage/persistent-volumes/#persistentvolumeclaims)
 for details.
 
 ```yaml
-kind: StorageClass
 apiVersion: storage.k8s.io/v1
+kind: StorageClass
 metadata:
   name: standard
 provisioner: kubernetes.io/aws-ebs
 parameters:
   type: gp2
 reclaimPolicy: Retain
+allowVolumeExpansion: true
 mountOptions:
   - debug
 volumeBindingMode: Immediate
@@ -60,7 +59,7 @@ volumeBindingMode: Immediate
 
 ### Provisioner
 
-Storage classes have a provisioner that determines what volume plugin is used
+Each StorageClass has a provisioner that determines what volume plugin is used
 for provisioning PVs. This field must be specified.
 
 | Volume Plugin        | Internal Provisioner| Config Example                       |
@@ -71,7 +70,7 @@ for provisioning PVs. This field must be specified.
 | CephFS               | -                   | -                                    |
 | Cinder               | &#x2713;            | [OpenStack Cinder](#openstack-cinder)|
 | FC                   | -                   | -                                    |
-| Flexvolume           | -                   | -                                    |
+| FlexVolume           | -                   | -                                    |
 | Flocker              | &#x2713;            | -                                    |
 | GCEPersistentDisk    | &#x2713;            | [GCE PD](#gce-pd)                          |
 | Glusterfs            | &#x2713;            | [Glusterfs](#glusterfs)              |
@@ -91,28 +90,61 @@ alongside Kubernetes). You can also run and specify external provisioners,
 which are independent programs that follow a [specification](https://git.k8s.io/community/contributors/design-proposals/storage/volume-provisioning.md)
 defined by Kubernetes. Authors of external provisioners have full discretion
 over where their code lives, how the provisioner is shipped, how it needs to be
-run, what volume plugin it uses (including Flex), etc. The repository [kubernetes-incubator/external-storage](https://github.com/kubernetes-incubator/external-storage)
+run, what volume plugin it uses (including Flex), etc. The repository
+[kubernetes-sigs/sig-storage-lib-external-provisioner](https://github.com/kubernetes-sigs/sig-storage-lib-external-provisioner)
 houses a library for writing external provisioners that implements the bulk of
-the specification plus various community-maintained external provisioners.
+the specification. Some external provisioners are listed under the repository
+[kubernetes-incubator/external-storage](https://github.com/kubernetes-incubator/external-storage).
 
-For example, NFS doesn't provide an internal provisioner, but an external provisioner
-can be used. Some external provisioners are listed under the repository [kubernetes-incubator/external-storage](https://github.com/kubernetes-incubator/external-storage).
-There are also cases when 3rd party storage vendors provide their own external
-provisioner.
+For example, NFS doesn't provide an internal provisioner, but an external
+provisioner can be used. There are also cases when 3rd party storage
+vendors provide their own external provisioner.
 
 ### Reclaim Policy
 
-Persistent Volumes that are dynamically created by a storage class will have the
+PersistentVolumes that are dynamically created by a StorageClass will have the
 reclaim policy specified in the `reclaimPolicy` field of the class, which can be
 either `Delete` or `Retain`. If no `reclaimPolicy` is specified when a
-`StorageClass` object is created, it will default to `Delete`.
+StorageClass object is created, it will default to `Delete`.
 
-Persistent Volumes that are created manually and managed via a storage class will have
+PersistentVolumes that are created manually and managed via a StorageClass will have
 whatever reclaim policy they were assigned at creation.
+
+### Allow Volume Expansion
+
+{{< feature-state for_k8s_version="v1.11" state="beta" >}}
+
+PersistentVolumes can be configured to be expandable. This feature when set to `true`, 
+allows the users to resize the volume by editing the corresponding PVC object. 
+
+The following types of volumes support volume expansion, when the underlying
+StorageClass has the field `allowVolumeExpansion` set to true.
+
+{{< table caption = "Table of Volume types and the version of Kubernetes they require"  >}}
+
+Volume type | Required Kubernetes version
+:---------- | :--------------------------
+gcePersistentDisk | 1.11
+awsElasticBlockStore | 1.11
+Cinder | 1.11
+glusterfs | 1.11
+rbd | 1.11
+Azure File | 1.11
+Azure Disk | 1.11
+Portworx | 1.11
+FlexVolume | 1.13
+CSI | 1.14 (alpha), 1.16 (beta)
+
+{{< /table >}}
+
+
+{{< note >}}
+You can only use the volume expansion feature to grow a Volume, not to shrink it.
+{{< /note >}}
 
 ### Mount Options
 
-Persistent Volumes that are dynamically created by a storage class will have the
+PersistentVolumes that are dynamically created by a StorageClass will have the
 mount options specified in the `mountOptions` field of the class.
 
 If the volume plugin does not support mount options but mount options are
@@ -134,11 +166,11 @@ A cluster administrator can address this issue by specifying the `WaitForFirstCo
 will delay the binding and provisioning of a PersistentVolume until a Pod using the PersistentVolumeClaim is created.
 PersistentVolumes will be selected or provisioned conforming to the topology that is
 specified by the Pod's scheduling constraints. These include, but are not limited to, [resource
-requirements](/docs/concepts/configuration/manage-compute-resources-container),
-[node selectors](/docs/concepts/configuration/assign-pod-node/#nodeselector),
+requirements](/docs/concepts/configuration/manage-resources-containers/),
+[node selectors](/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector),
 [pod affinity and
-anti-affinity](/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity),
-and [taints and tolerations](/docs/concepts/configuration/taint-and-toleration).
+anti-affinity](/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity),
+and [taints and tolerations](/docs/concepts/scheduling-eviction/taint-and-toleration).
 
 The following plugins support `WaitForFirstConsumer` with dynamic provisioning:
 
@@ -151,10 +183,10 @@ The following plugins support `WaitForFirstConsumer` with pre-created Persistent
 * All of the above
 * [Local](#local)
 
-{{< feature-state state="beta" for_k8s_version="1.14" >}}
+{{< feature-state state="stable" for_k8s_version="v1.17" >}}
 [CSI volumes](/docs/concepts/storage/volumes/#csi) are also supported with dynamic provisioning
 and pre-created PVs, but you'll need to look at the documentation for a specific CSI driver
-to see its supported topology keys and examples. The `CSINodeInfo` feature gate must be enabled.
+to see its supported topology keys and examples.
 
 ### Allowed Topologies
 
@@ -167,8 +199,8 @@ zones and should be used as a replacement for the `zone` and `zones` parameters 
 supported plugins.
 
 ```yaml
-kind: StorageClass
 apiVersion: storage.k8s.io/v1
+kind: StorageClass
 metadata:
   name: standard
 provisioner: kubernetes.io/gce-pd
@@ -185,17 +217,21 @@ allowedTopologies:
 
 ## Parameters
 
-Storage classes have parameters that describe volumes belonging to the storage
+Storage Classes have parameters that describe volumes belonging to the storage
 class. Different parameters may be accepted depending on the `provisioner`. For
  example, the value `io1`, for the parameter `type`, and the parameter
 `iopsPerGB` are specific to EBS. When a parameter is omitted, some default is
 used.
 
+There can be at most 512 parameters defined for a StorageClass.
+The total length of the parameters object including its keys and values cannot
+exceed 256 KiB.
+
 ### AWS EBS
 
 ```yaml
-kind: StorageClass
 apiVersion: storage.k8s.io/v1
+kind: StorageClass
 metadata:
   name: slow
 provisioner: kubernetes.io/aws-ebs
@@ -206,7 +242,7 @@ parameters:
 ```
 
 * `type`: `io1`, `gp2`, `sc1`, `st1`. See
-  [AWS docs](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html)
+  [AWS docs](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html)
   for details. Default: `gp2`.
 * `zone` (Deprecated): AWS zone. If neither `zone` nor `zones` is specified, volumes are
   generally round-robin-ed across all active zones where Kubernetes cluster
@@ -218,7 +254,7 @@ parameters:
 * `iopsPerGB`: only for `io1` volumes. I/O operations per second per GiB. AWS
   volume plugin multiplies this with size of requested volume to compute IOPS
   of the volume and caps it at 20 000 IOPS (maximum supported by AWS, see
-  [AWS docs](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html).
+  [AWS docs](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSVolumeTypes.html).
   A string is expected here, i.e. `"10"`, not `10`.
 * `fsType`: fsType that is supported by kubernetes. Default: `"ext4"`.
 * `encrypted`: denotes whether the EBS volume should be encrypted or not.
@@ -236,13 +272,14 @@ parameters:
 ### GCE PD
 
 ```yaml
-kind: StorageClass
 apiVersion: storage.k8s.io/v1
+kind: StorageClass
 metadata:
   name: slow
 provisioner: kubernetes.io/gce-pd
 parameters:
   type: pd-standard
+  fstype: ext4
   replication-type: none
 ```
 
@@ -254,18 +291,21 @@ parameters:
   is specified, volumes are generally round-robin-ed across all active zones
   where Kubernetes cluster has a node. `zone` and `zones` parameters must not
   be used at the same time.
+* `fstype`: `ext4` or `xfs`. Default: `ext4`. The defined filesystem type must be supported by the host operating system.
+
 * `replication-type`: `none` or `regional-pd`. Default: `none`.
 
 If `replication-type` is set to `none`, a regular (zonal) PD will be provisioned.
 
 If `replication-type` is set to `regional-pd`, a
 [Regional Persistent Disk](https://cloud.google.com/compute/docs/disks/#repds)
-will be provisioned. In this case, users must use `zones` instead of `zone` to
-specify the desired replication zones. If exactly two zones are specified, the
-Regional PD will be provisioned in those zones. If more than two zones are
-specified, Kubernetes will arbitrarily choose among the specified zones. If the
-`zones` parameter is omitted, Kubernetes will arbitrarily choose among zones
-managed by the cluster.
+will be provisioned. It's highly recommended to have
+`volumeBindingMode: WaitForFirstConsumer` set, in which case when you create
+a Pod that consumes a PersistentVolumeClaim which uses this StorageClass, a
+Regional Persistent Disk is provisioned with two zones. One zone is the same
+as the zone that the Pod is scheduled in. The other zone is randomly picked
+from the zones available to the cluster. Disk zones can be further constrained
+using `allowedTopologies`.
 
 {{< note >}}
 `zone` and `zones` parameters are deprecated and replaced with
@@ -312,7 +352,7 @@ parameters:
   contains user password to use when talking to Gluster REST service. These
   parameters are optional, empty password will be used when both
   `secretNamespace` and `secretName` are omitted. The provided secret must have
-  type `"kubernetes.io/glusterfs"`, e.g. created in this way:
+  type `"kubernetes.io/glusterfs"`, for example created in this way:
 
     ```
     kubectl create secret generic heketi-secret \
@@ -329,7 +369,7 @@ parameters:
   `"8452344e2becec931ece4e33c4674e4e,42982310de6c63381718ccfa6d8cf397"`. This
   is an optional parameter.
 * `gidMin`, `gidMax` : The minimum and maximum value of GID range for the
-  storage class. A unique value (GID) in this range ( gidMin-gidMax ) will be
+  StorageClass. A unique value (GID) in this range ( gidMin-gidMax ) will be
   used for dynamically provisioned volumes. These are optional values. If not
   specified, the volume will be provisioned with a value between 2000-2147483647
   which are defaults for gidMin and gidMax respectively.
@@ -356,8 +396,8 @@ parameters:
 ### OpenStack Cinder
 
 ```yaml
-kind: StorageClass
 apiVersion: storage.k8s.io/v1
+kind: StorageClass
 metadata:
   name: gold
 provisioner: kubernetes.io/cinder
@@ -369,17 +409,32 @@ parameters:
   round-robin-ed across all active zones where Kubernetes cluster has a node.
 
 {{< note >}}
-{{< feature-state state="deprecated" for_k8s_version="1.11" >}}
+{{< feature-state state="deprecated" for_k8s_version="v1.11" >}}
 This internal provisioner of OpenStack is deprecated. Please use [the external cloud provider for OpenStack](https://github.com/kubernetes/cloud-provider-openstack).
 {{< /note >}}
 
 ### vSphere
 
+There are two types of provisioners for vSphere storage classes: 
+
+- [CSI provisioner](#csi-provisioner): `csi.vsphere.vmware.com`
+- [vCP provisioner](#vcp-provisioner): `kubernetes.io/vsphere-volume`
+
+In-tree provisioners are [deprecated](/blog/2019/12/09/kubernetes-1-17-feature-csi-migration-beta/#why-are-we-migrating-in-tree-plugins-to-csi). For more information on the CSI provisioner, see [Kubernetes vSphere CSI Driver](https://vsphere-csi-driver.sigs.k8s.io/) and [vSphereVolume CSI migration](/docs/concepts/storage/volumes/#csi-migration-5).
+
+#### CSI Provisioner {#vsphere-provisioner-csi}
+
+The vSphere CSI StorageClass provisioner works with Tanzu Kubernetes clusters. For an example, refer to the [vSphere CSI repository](https://raw.githubusercontent.com/kubernetes-sigs/vsphere-csi-driver/master/example/vanilla-k8s-file-driver/example-sc.yaml).
+
+#### vCP Provisioner 
+
+The following examples use the VMware Cloud Provider (vCP) StorageClass provisioner.  
+
 1. Create a StorageClass with a user specified disk format.
 
     ```yaml
-    kind: StorageClass
     apiVersion: storage.k8s.io/v1
+    kind: StorageClass
     metadata:
       name: fast
     provisioner: kubernetes.io/vsphere-volume
@@ -392,8 +447,8 @@ This internal provisioner of OpenStack is deprecated. Please use [the external c
 2. Create a StorageClass with a disk format on a user specified datastore.
 
     ```yaml
-    kind: StorageClass
     apiVersion: storage.k8s.io/v1
+    kind: StorageClass
     metadata:
       name: fast
     provisioner: kubernetes.io/vsphere-volume
@@ -403,7 +458,7 @@ This internal provisioner of OpenStack is deprecated. Please use [the external c
     ```
 
     `datastore`: The user can also specify the datastore in the StorageClass.
-    The volume will be created on the datastore specified in the storage class,
+    The volume will be created on the datastore specified in the StorageClass,
     which in this case is `VSANDatastore`. This field is optional. If the
     datastore is not specified, then the volume will be created on the datastore
     specified in the vSphere config file used to initialize the vSphere Cloud
@@ -446,8 +501,8 @@ which you try out for persistent volume management inside Kubernetes for vSphere
 ### Ceph RBD
 
 ```yaml
-kind: StorageClass
 apiVersion: storage.k8s.io/v1
+kind: StorageClass
 metadata:
   name: fast
 provisioner: kubernetes.io/rbd
@@ -476,7 +531,7 @@ parameters:
   same as `adminId`.
 * `userSecretName`: The name of Ceph Secret for `userId` to map RBD image. It
   must exist in the same namespace as PVCs. This parameter is required.
-  The provided secret must have type "kubernetes.io/rbd", e.g. created in this
+  The provided secret must have type "kubernetes.io/rbd", for example created in this
   way:
 
     ```shell
@@ -522,11 +577,12 @@ parameters:
   Default is "default".
 * `adminSecretName`: secret that holds information about the Quobyte user and
   the password to authenticate against the API server. The provided secret
-  must have type "kubernetes.io/quobyte", e.g. created in this way:
+  must have type "kubernetes.io/quobyte" and the keys `user` and `password`,
+  for example:
 
     ```shell
     kubectl create secret generic quobyte-admin-secret \
-      --type="kubernetes.io/quobyte" --from-literal=key='opensesame' \
+      --type="kubernetes.io/quobyte" --from-literal=user='admin' --from-literal=password='opensesame' \
       --namespace=kube-system
     ```
 
@@ -541,11 +597,11 @@ parameters:
 
 ### Azure Disk
 
-#### Azure Unmanaged Disk Storage Class
+#### Azure Unmanaged Disk storage class {#azure-unmanaged-disk-storage-class}
 
 ```yaml
-kind: StorageClass
 apiVersion: storage.k8s.io/v1
+kind: StorageClass
 metadata:
   name: slow
 provisioner: kubernetes.io/azure-disk
@@ -562,11 +618,11 @@ parameters:
   ignored. If a storage account is not provided, a new storage account will be
   created in the same resource group as the cluster.
 
-#### New Azure Disk Storage Class (starting from v1.7.2)
+#### Azure Disk storage class (starting from v1.7.2) {#azure-disk-storage-class}
 
 ```yaml
-kind: StorageClass
 apiVersion: storage.k8s.io/v1
+kind: StorageClass
 metadata:
   name: slow
 provisioner: kubernetes.io/azure-disk
@@ -583,6 +639,9 @@ parameters:
   unmanaged disk in the same resource group as the cluster. When `kind` is 
   `managed`, all managed disks are created in the same resource group as 
   the cluster.
+* `resourceGroup`: Specify the resource group in which the Azure disk will be created. 
+   It must be an existing resource group name. If it is unspecified, the disk will be 
+   placed in the same resource group as the current Kubernetes cluster.
 
 - Premium VM can attach both Standard_LRS and Premium_LRS disks, while Standard
   VM can only attach Standard_LRS disks.
@@ -592,8 +651,8 @@ parameters:
 ### Azure File
 
 ```yaml
-kind: StorageClass
 apiVersion: storage.k8s.io/v1
+kind: StorageClass
 metadata:
   name: azurefile
 provisioner: kubernetes.io/azure-file
@@ -610,25 +669,37 @@ parameters:
   group are searched to find one that matches `skuName` and `location`. If a
   storage account is provided, it must reside in the same resource group as the
   cluster, and `skuName` and `location` are ignored.
+* `secretNamespace`: the namespace of the secret that contains the Azure Storage 
+  Account Name and Key. Default is the same as the Pod.
+* `secretName`: the name of the secret that contains the Azure Storage Account Name and
+  Key. Default is `azure-storage-account-<accountName>-secret`
+* `readOnly`: a flag indicating whether the storage will be mounted as read only.
+  Defaults to false which means a read/write mount. This setting will impact the 
+  `ReadOnly` setting in VolumeMounts as well.
 
-During provision, a secret is created for mounting credentials. If the cluster
-has enabled both [RBAC](/docs/reference/access-authn-authz/rbac/) and
+During storage provisioning, a secret named by `secretName` is created for the 
+mounting credentials. If the cluster has enabled both 
+[RBAC](/docs/reference/access-authn-authz/rbac/) and 
 [Controller Roles](/docs/reference/access-authn-authz/rbac/#controller-roles),
 add the `create` permission of resource `secret` for clusterrole
 `system:controller:persistent-volume-binder`.
 
+In a multi-tenancy context, it is strongly recommended to set the value for 
+`secretNamespace` explicitly, otherwise the storage account credentials may
+be read by other users.
+
 ### Portworx Volume
 
 ```yaml
-kind: StorageClass
 apiVersion: storage.k8s.io/v1
+kind: StorageClass
 metadata:
   name: portworx-io-priority-high
 provisioner: kubernetes.io/portworx-volume
 parameters:
   repl: "1"
   snap_interval:   "70"
-  io_priority:  "high"
+  priority_io:  "high"
 
 ```
 
@@ -637,7 +708,7 @@ parameters:
 * `repl`: number of synchronous replicas to be provided in the form of
   replication factor `1..3` (default: `1`) A string is expected here i.e.
   `"1"` and not `1`.
-* `io_priority`: determines whether the volume will be created from higher
+* `priority_io`: determines whether the volume will be created from higher
   performance or a lower priority storage `high/medium/low` (default: `low`).
 * `snap_interval`: clock/time interval in minutes for when to trigger snapshots.
   Snapshots are incremental based on difference with the prior snapshot, 0
@@ -655,8 +726,8 @@ parameters:
 ### ScaleIO
 
 ```yaml
-kind: StorageClass
 apiVersion: storage.k8s.io/v1
+kind: StorageClass
 metadata:
   name: slow
 provisioner: kubernetes.io/scaleio
@@ -696,8 +767,8 @@ kubectl create secret generic sio-secret --type="kubernetes.io/scaleio" \
 ### StorageOS
 
 ```yaml
-kind: StorageClass
 apiVersion: storage.k8s.io/v1
+kind: StorageClass
 metadata:
   name: fast
 provisioner: kubernetes.io/storageos
@@ -747,8 +818,8 @@ references it.
 {{< feature-state for_k8s_version="v1.14" state="stable" >}}
 
 ```yaml
-kind: StorageClass
 apiVersion: storage.k8s.io/v1
+kind: StorageClass
 metadata:
   name: local-storage
 provisioner: kubernetes.io/no-provisioner
@@ -756,11 +827,10 @@ volumeBindingMode: WaitForFirstConsumer
 ```
 
 Local volumes do not currently support dynamic provisioning, however a StorageClass
-should still be created to delay volume binding until pod scheduling. This is
+should still be created to delay volume binding until Pod scheduling. This is
 specified by the `WaitForFirstConsumer` volume binding mode.
 
-Delaying volume binding allows the scheduler to consider all of a pod's
+Delaying volume binding allows the scheduler to consider all of a Pod's
 scheduling constraints when choosing an appropriate PersistentVolume for a
 PersistentVolumeClaim.
 
-{{% /capture %}}
